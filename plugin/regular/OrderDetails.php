@@ -72,6 +72,7 @@
 
 <script>
   $(document).ready(function() {
+
     $('#item_code').select2({
       placeholder: "Select an Option",
       width: '100%',

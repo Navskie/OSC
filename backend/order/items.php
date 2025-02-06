@@ -13,8 +13,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $ol_status = 'On Order';
   $ol_seller = $users_code ?? '';
   $ol_reseller = $users_creator ?? '';
-  $ol_state = '';
-  $ol_country = 'PHILIPPINES';
+  $ol_state = $_SESSION['state'];
+  $ol_country = $_SESSION['country'];
 
   // Fetch item description and points
   $stmt = $conn->prepare("SELECT items_desc, items_points FROM upti_items WHERE items_code = ? UNION SELECT package_desc, package_points FROM upti_package WHERE package_code = ?");
