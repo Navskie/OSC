@@ -2,30 +2,46 @@
 include_once '../../database/conn.php';
 
 if (!isset($conn) || $conn->connect_error) {
-    die(json_encode(["error" => "Database Connection Failed: " . ($conn->connect_error ?? "Unknown Error")]));
+    die(json_encode(["error" => "Database Connection Failed: " . ($conn->connect_error ?? "Unknown Error")])); 
 }
 
 $searchTerm = isset($_GET['q']) ? $_GET['q'] : "";
 
-// Check if the poid exists in upti_order_list
-$removeCategories = ['UPSELL', 'PREMIUM']; // Default categories to remove
+$removeCategories = []; // Default na walang restriction
 
-// Only check for poid if it's defined
+// Check POID to decide whether to remove 'UPSELL' and 'PREMIUM'
 if (!empty($poid)) {
-    $stmt = $conn->prepare("SELECT COUNT(id) FROM upti_order_list WHERE ol_poid = ?");
+    $stmt = $conn->prepare("
+        SELECT COUNT(*) 
+        FROM upti_order_list 
+        INNER JOIN upti_code ON code_name = ol_code 
+        WHERE ol_poid = ? 
+        AND code_category NOT IN ('UPSELL', 'PREMIUM')
+    ");
     $stmt->bind_param("s", $poid);
     $stmt->execute();
     $stmt->bind_result($poidCount);
     $stmt->fetch();
     $stmt->close();
 
-    // If poid exists in upti_order_list, remove 'UPSELL' and 'PREMIUM'
+    // If the count is greater than 0, include 'UPSELL' and 'PREMIUM'
     if ($poidCount > 0) {
         $removeCategories = ['UPSELL', 'PREMIUM'];
     }
 }
 
-if (isset($searchTerm) && !empty($searchTerm)) {
+// Dynamically build the WHERE condition for the query based on $removeCategories
+$categoryFilter = "";
+if (!empty($removeCategories)) {
+    // Include 'UPSELL' and 'PREMIUM' if POID exists
+    $categoryFilter = "AND (code_category != 'RESELLER')";
+} else {
+    // If no restriction for POID, don't exclude 'UPSELL' and 'PREMIUM'
+    $categoryFilter = "AND (code_category != 'UPSELL' AND code_category != 'PREMIUM')";
+    
+}
+
+if (!empty($searchTerm)) {
     // Prepare the query with search term
     $stmt = $conn->prepare("
         (
@@ -34,7 +50,7 @@ if (isset($searchTerm) && !empty($searchTerm)) {
             INNER JOIN upti_code ON code_name = items_code
             WHERE (items_desc LIKE ? OR items_code LIKE ?)
             AND items_status = 'Active'
-            AND (code_category NOT IN ('" . implode("', '", $removeCategories) . "') OR code_category = 'RESELLER')
+            $categoryFilter
             LIMIT 10
         )
         UNION 
@@ -44,7 +60,7 @@ if (isset($searchTerm) && !empty($searchTerm)) {
             INNER JOIN upti_code ON code_name = package_code
             WHERE (package_desc LIKE ? OR package_code LIKE ?)
             AND package_status = 'Active'
-            AND (code_category NOT IN ('" . implode("', '", $removeCategories) . "') OR code_category = 'RESELLER')
+            $categoryFilter
             LIMIT 10
         )
         LIMIT 10
@@ -59,7 +75,7 @@ if (isset($searchTerm) && !empty($searchTerm)) {
             FROM upti_items 
             INNER JOIN upti_code ON code_name = items_code
             WHERE items_status = 'Active'
-            AND (code_category NOT IN ('" . implode("', '", $removeCategories) . "') OR code_category = 'RESELLER')
+            $categoryFilter
             LIMIT 5
         )
         UNION 
@@ -68,7 +84,7 @@ if (isset($searchTerm) && !empty($searchTerm)) {
             FROM upti_package 
             INNER JOIN upti_code ON code_name = package_code
             WHERE package_status = 'Active'
-            AND (code_category NOT IN ('" . implode("', '", $removeCategories) . "') OR code_category = 'RESELLER')
+            $categoryFilter
             LIMIT 5
         )
         LIMIT 5
