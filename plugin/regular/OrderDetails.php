@@ -30,13 +30,16 @@
       </div>
     </div>
   </div>
+
   <div class="row">
     <div class="col-md-3 col-12">
       <div class="ribbon-wrapper card">
         <div class="card-body">
-          <div class="ribbon ribbon-secondary">Order Status</div>
-          <p>You need 1 more Upsell.</p>
-          <p>This promo requires Upsell.</p>
+          <div class="ribbon ribbon-secondary">Order Notification</div>
+          <!-- pag walang laman ang upti_order_list -->
+          <p>Order list empty, please add.</p>
+          <!-- pag yung kulang ung nilagay na upsell -->
+          <p>You need 1 more upsell to checkout</p>
         </div>
       </div>
     </div>
@@ -68,8 +71,8 @@
     </div>
   </div>
 
-
-<?php include_once 'modal/order/delete_item.php' ?>
+  <?php include_once 'modal/order/delete_item.php' ?>
+</div>
 
 <script>
   $(document).ready(function() {
@@ -109,7 +112,7 @@
             }, 2000);
             $("#orderForm")[0].reset();
             $('#item_code').val(null).trigger("change");
-            fetchOrderDetails();
+            fetchOrderDetails(); // Fetch updated order details
           } else if (response.status === "stock") {
             toastr.error("Not Enough Stocks", "Error");
             setTimeout(() => {
@@ -127,7 +130,7 @@
             }, 2000);
             $("#orderForm")[0].reset();
             $('#item_code').val(null).trigger("change");
-            fetchOrderDetails();
+            fetchOrderDetails(); // Fetch updated order details
           } else {
             toastr.error("All fields are required", "Error");
             setTimeout(() => {
@@ -150,7 +153,7 @@
         searching: true,
         ordering: true,
         info: true,
-        bDestroy: true
+        bDestroy: true // Destroy the previous DataTable instance before re-initializing
       });
 
       $.ajax({
@@ -160,10 +163,11 @@
         success: function(response) {
           if (!response || response.status !== "success" || !Array.isArray(response.data)) {
             toastr.error("No data found.", "Alert");
+            table.clear().draw(); // Clear table when no data is available
             return;
           }
 
-          table.clear().draw();
+          table.clear().draw(); // Clear current table data before adding new data
 
           if (response.data.length > 0) {
             response.data.forEach(item => {
@@ -183,7 +187,7 @@
           $("#orderCount").text("Total Records: " + response.data.length);
         },
         error: function(xhr, status, error) {
-          table.clear().draw();
+          table.clear().draw();  // Clear table in case of error
           $("#orderDetails").html(`<tr><td colspan="6" class="text-center text-danger">Error loading data.</td></tr>`);
           toastr.error("Error fetching data: " + xhr.responseText, "Error");
         }
@@ -207,7 +211,9 @@
         success: function(response) {
           if (response.status === "success") {
             toastr.success("Item deleted successfully!", "Success");
-            fetchOrderDetails();
+
+            fetchOrderDetails(); // Re-fetch order details to update the table
+
             $('#deleteModal').modal('hide');
           } else {
             toastr.error("Failed to delete item", "Error");
@@ -219,6 +225,6 @@
       });
     });
 
-    fetchOrderDetails();
+    fetchOrderDetails(); // Initial fetch to populate the table when the page loads
   });
 </script>
