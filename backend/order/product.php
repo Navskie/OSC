@@ -15,15 +15,15 @@ if ($searchTerm) {
     $stmt = $conn->prepare("
         (
             SELECT items_code AS code, items_desc AS description 
-            FROM upti_items 
-            WHERE (items_desc LIKE ? OR items_code LIKE ?) AND items_status = 'Active'
+            FROM upti_items  INNER JOIN upti_code ON code_name = items_code
+            WHERE (items_desc LIKE ? OR items_code LIKE ?) AND items_status = 'Active' AND code_category NOT IN ('UPSELL', 'PREMIUM', 'RESELLER')
             LIMIT 10
         )
         UNION 
         (
             SELECT package_code AS code, package_desc AS description 
-            FROM upti_package 
-            WHERE (package_desc LIKE ? OR package_code LIKE ?) AND package_status = 'Active'
+            FROM upti_package INNER JOIN upti_code ON code_name = package_code
+            WHERE (package_desc LIKE ? OR package_code LIKE ?) AND package_status = 'Active' AND code_category NOT IN ('UPSELL', 'PREMIUM', 'RESELLER')
             LIMIT 10
         )
         LIMIT 10
@@ -36,15 +36,15 @@ if ($searchTerm) {
     $stmt = $conn->prepare("
         (
             SELECT items_code AS code, items_desc AS description 
-            FROM upti_items 
-            WHERE items_status = 'Active'
+            FROM upti_items INNER JOIN upti_code ON code_name = items_code
+            WHERE items_status = 'Active' AND code_category NOT IN ('UPSELL', 'PREMIUM', 'RESELLER')
             LIMIT 5
         )
         UNION 
         (
             SELECT package_code AS code, package_desc AS description 
-            FROM upti_package 
-            WHERE package_status = 'Active'
+            FROM upti_package INNER JOIN upti_code ON code_name = package_code
+            WHERE package_status = 'Active' AND code_category NOT IN ('UPSELL', 'PREMIUM', 'RESELLER')
             LIMIT 5
         )
         LIMIT 5

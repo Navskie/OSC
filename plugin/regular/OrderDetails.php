@@ -31,7 +31,17 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-sm-12">
+    <div class="col-md-3 col-12">
+      <div class="ribbon-wrapper card">
+        <div class="card-body">
+          <div class="ribbon ribbon-secondary">Order Status</div>
+          <p>You need 1 more Upsell.</p>
+          <p>This promo requires Upsell.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-9 col-12">
       <div class="card">
         <div class="card-header">
           <h5 class="card-title mb-2">Items List</h5>
@@ -46,6 +56,7 @@
                   <th>Qty</th>
                   <th>Price</th>
                   <th>Subtotal</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody id="orderDetails">
@@ -56,7 +67,9 @@
       </div>
     </div>
   </div>
-</div>
+
+
+<?php include_once 'modal/order/delete_item.php' ?>
 
 <script>
   $(document).ready(function() {
@@ -103,7 +116,7 @@
               submitButton.html('Submit Order').prop("disabled", false);
             }, 2000);
           } else if (response.status === "price") {
-            toastr.error("No price indicated, cannot add", "Error");
+            toastr.error("Item cannot be added without price details", "Error");
             setTimeout(() => {
               submitButton.html('Submit Order').prop("disabled", false);
             }, 2000);
@@ -132,40 +145,79 @@
     });
 
     function fetchOrderDetails() {
+      var table = $('#orderTable').DataTable({
+        paging: true,
+        searching: true,
+        ordering: true,
+        info: true,
+        bDestroy: true
+      });
+
       $.ajax({
-        url: "backend/order/items_list",
+        url: "backend/order/items_list",  
         type: "GET",
         dataType: "json",
         success: function(response) {
-          if (response.status === "success") {
-            var orderDetails = response.data;
-            var orderDetailsHtml = '';
-            orderDetails.forEach(function(order) {
-              orderDetailsHtml += '<tr>';
-              orderDetailsHtml += '<td>' + order.ol_code + '</td>';
-              orderDetailsHtml += '<td>' + order.ol_desc + '</td>';
-              orderDetailsHtml += '<td>' + order.ol_qty + '</td>';
-              orderDetailsHtml += '<td>' + order.ol_price + '</td>';
-              orderDetailsHtml += '<td>' + order.ol_subtotal + '</td>';
-              orderDetailsHtml += '</tr>';
-            });
-            $('#orderDetails').html(orderDetailsHtml);
-            $('#inventoryTable').DataTable().clear().destroy();
-            $('#inventoryTable').DataTable({
-              paging: true,
-              searching: true,
-              ordering: true,
-              info: true,
+          if (!response || response.status !== "success" || !Array.isArray(response.data)) {
+            toastr.error("No data found.", "Alert");
+            return;
+          }
+
+          table.clear().draw();
+
+          if (response.data.length > 0) {
+            response.data.forEach(item => {
+              table.row.add([
+                item.ol_code,       
+                item.ol_desc,       
+                item.ol_qty,        
+                item.ol_price,      
+                item.ol_subtotal,   
+                `<button class="btn btn-danger btn-sm delete-btn" data-id="${item.ol_code}">Delete</button>`
+              ]).draw(false);
             });
           } else {
-            toastr.error("Failed to load order details", "Error");
+            $("#orderDetails").html(`<tr><td colspan="6" class="text-center text-muted">No order details found.</td></tr>`);
           }
+
+          $("#orderCount").text("Total Records: " + response.data.length);
         },
-        error: function(xhr) {
-          toastr.error("Failed to fetch order details", "Error");
+        error: function(xhr, status, error) {
+          table.clear().draw();
+          $("#orderDetails").html(`<tr><td colspan="6" class="text-center text-danger">Error loading data.</td></tr>`);
+          toastr.error("Error fetching data: " + xhr.responseText, "Error");
         }
       });
     }
+
+    $(document).on('click', '.delete-btn', function() {
+      var orderCode = $(this).data('id');
+      $('#deleteModal').modal('show');
+      $('#confirmDelete').data('id', orderCode);
+    });
+
+    $('#confirmDelete').click(function() {
+      var orderCode = $(this).data('id');
+
+      $.ajax({
+        url: "backend/order/delete_item",  
+        type: "POST",
+        data: { ol_code: orderCode },
+        dataType: "json",
+        success: function(response) {
+          if (response.status === "success") {
+            toastr.success("Item deleted successfully!", "Success");
+            fetchOrderDetails();
+            $('#deleteModal').modal('hide');
+          } else {
+            toastr.error("Failed to delete item", "Error");
+          }
+        },
+        error: function(xhr) {
+          toastr.error("Error deleting item: " + xhr.responseText, "Error");
+        }
+      });
+    });
 
     fetchOrderDetails();
   });
