@@ -37,7 +37,7 @@ if (!empty($removeCategories)) {
     $categoryFilter = "AND (code_category != 'RESELLER')";
 } else {
     // If no restriction for POID, don't exclude 'UPSELL' and 'PREMIUM'
-    $categoryFilter = "AND (code_category != 'UPSELL' AND code_category != 'PREMIUM')";
+    $categoryFilter = "AND (code_category != 'UPSELL' AND code_category != 'PREMIUM' AND code_category != 'RESELLER') ";
     
 }
 
