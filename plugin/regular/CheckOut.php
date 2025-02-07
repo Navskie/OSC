@@ -101,7 +101,7 @@
                   <div class="form-group students-up-files">
                     <div class="uplod">
                       <label class="file-upload image-upbtn mb-0">
-                        Choose File <input type="file">
+                        Choose File <input type="file" id="fileInput">
                       </label>
                     </div>
                   </div>
@@ -141,13 +141,26 @@
 
 <script>
   $(document).ready(function() {
-    $('#paymentMethod').change(function() {
-      if ($(this).val() === "E-Payment") {
-        $('#paymentDetails').fadeIn();
-      } else {
-        $('#paymentDetails').fadeOut();
-      }
-    });
+    // Temporary image placeholder
+  let defaultImage = 'assets/img/placeholder.png';
+  $('#paymentDetails img').attr('src', defaultImage);
+  
+  $('#paymentMethod').change(function() {
+    if ($(this).val() === "E-Payment") {
+      $('#paymentDetails').fadeIn();
+    } else {
+      $('#paymentDetails').fadeOut();
+    }
+  });
+
+  // Image preview before upload
+  $("#fileInput").change(function(event) {
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      $('#paymentDetails img').attr('src', e.target.result);
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  });
 
     function fetchInvoiceData() {
       let poid = "<?php echo $poid; ?>"; // Get POID from PHP
@@ -210,6 +223,66 @@
     $('#agreeStatement').change(function() {
       $('#purchaseButton').prop('disabled', !this.checked);
     });
+
+    // Updated JavaScript with Toastr
+$(document).ready(function() {
+  // Temporary image placeholder
+  let defaultImage = 'assets/img/placeholder.png';
+  $('#paymentDetails img').attr('src', defaultImage);
+  
+  $('#paymentMethod').change(function() {
+    if ($(this).val() === "E-Payment") {
+      $('#paymentDetails').fadeIn();
+    } else {
+      $('#paymentDetails').fadeOut();
+    }
+  });
+
+  // Image preview before upload
+  $("#fileInput").change(function(event) {
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      $('#paymentDetails img').attr('src', e.target.result);
+    };
+    reader.readAsDataURL(event.target.files[0]);
+  });
+
+  // Submit form using AJAX
+  $('#purchaseButton').click(function(e) {
+    e.preventDefault();
+    let formData = new FormData();
+    formData.append('paymentMethod', $('#paymentMethod').val());
+    formData.append('agreeStatement', $('#agreeStatement').is(':checked'));
+    let file = $('#fileInput')[0].files[0];
+    if (file) {
+      formData.append('receiptImage', file);
+    }
+
+    $.ajax({
+      url: 'backend/order/submit_checkout',
+      type: 'POST',
+      data: formData,
+      contentType: false,
+      processData: false,
+      success: function(response) {
+        let res = JSON.parse(response);
+        if (res.status === 'success') {
+          toastr.success("Data loaded successfully!", "Success");
+          setTimeout(function() {
+            window.location.href = 'list.php';
+          }, 2000);
+        } else {
+          toastr.error('Error: ' + res.message, 'Error');
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('AJAX Error:', error);
+        toastr.error('Error submitting checkout. Check console for details.', 'Error');
+      }
+    });
+  });
+});
+
 
     // Initial fetch and refresh every 3 seconds
     fetchInvoiceData();
