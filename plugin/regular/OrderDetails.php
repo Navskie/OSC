@@ -68,6 +68,7 @@
   </div>
 
   <?php include_once 'modal/order/delete_item.php' ?>
+  <?php include_once 'modal/order/free.php' ?>
 </div>
 
 <script>
@@ -205,7 +206,10 @@
             var premiumQty = 0;
             var promoQty = 0;
             var specialPromoQty = 0;
+            var autoFreeQty = 0;
             var otherCategoryQty = 0;
+            var hasAutoFree = false;
+            var autoFreeItems = []; // Store AUTO FREE items
 
             response.data.forEach(function(item) {
               switch(item.code_category) {
@@ -224,6 +228,11 @@
                 case "SPECIAL PROMO":
                   specialPromoQty += parseInt(item.total_qty);
                   break;
+                case "AUTO FREE":
+                  autoFreeQty += parseInt(item.total_qty);
+                  hasAutoFree = true;
+                  autoFreeItems.push({ code: item.code, maincode: item.maincode }); // Store both code & maincode
+                  break;
                 default:
                   otherCategoryQty += parseInt(item.total_qty);
               }
@@ -240,7 +249,7 @@
             }
 
             if (premiumQty > 1) {
-              notificationHtml += "<p class='text-danger'>You can only add 1 PREMIUM per item Regular Items.</p>";
+              notificationHtml += "<p class='text-danger'>You can only add 1 PREMIUM per Regular Item.</p>";
             }
 
             if ((upsellQty + premiumQty) > ((promoQty + requiredUpsellQty + specialPromoQty + otherCategoryQty) * 2)) {
@@ -249,6 +258,17 @@
 
             if (notificationHtml === "") {
               notificationHtml = "<p>All items are good to go for checkout!</p>";
+            }
+
+            // If AUTO FREE exists, add buttons for each item with correct code
+            if (hasAutoFree) {
+              autoFreeItems.forEach(function(item) {
+                notificationHtml += `<button type="button" class="btn btn-primary mt-2" 
+                                      data-bs-toggle="modal" 
+                                      data-bs-target="#autoFreeModal">
+                                      Claim Free Items
+                                    </button>`;
+              });
             }
 
             $("#orderNotification").html(notificationHtml);
@@ -261,6 +281,7 @@
         }
       });
     }
+
 
     $(document).on('click', '.delete-btn', function() {
       var orderCode = $(this).data('id');

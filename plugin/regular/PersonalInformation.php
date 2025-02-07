@@ -75,25 +75,25 @@
 
               <div class="col-xl-4 col-md-6 col-sm-12 col-12">
                 <div class="form-group">
-                    <label>State</label>
-                    <select name="state" id="state" class="form-control select2"></select>
+                  <label>State</label>
+                  <select name="state" id="state" class="form-control select2"></select>
                 </div>
-            </div>
-
-            <?php
-              // Check if there are any records in upti_order_list
-              $result = $conn->query("SELECT COUNT(*) AS count FROM upti_order_list WHERE ol_poid = '$poid'");
-              $hasOrders = $result->fetch_assoc()['count'] > 0;
-              ?>
-
-              <!-- Save Information Button -->
-              <div class="col-xl-4 col-md-6 col-sm-12 col-12">
-                  <div class="form-group">
-                      <button type="submit" id="saveBtn" class="btn btn-primary form-control text-white hideBtn"
-                          <?= $hasOrders ? 'disabled' : ''; ?>>Save Information</button>
-                  </div>
               </div>
 
+              <?php
+            // Check if there are any records in upti_order_list
+            $result = $conn->query("SELECT COUNT(*) AS count FROM upti_order_list WHERE ol_poid = '$poid'");
+            $hasOrders = $result->fetch_assoc()['count'];
+            $disabled = ($hasOrders > 0) ? 'disabled' : ''; // Assign 'disabled' only if there are orders
+            ?>
+
+            <!-- Save Information Button -->
+            <div class="col-xl-4 col-md-6 col-sm-12 col-12">
+              <div class="form-group">
+                <button type="submit" id="saveBtn" class="btn btn-primary form-control text-white" 
+                  <?php echo $disabled; ?>>Save Information</button>
+              </div>
+            </div>
 
             </div>
           </div>
@@ -102,90 +102,101 @@
     </div>
   </div>
 </div>
-
 <script>
-$(document).ready(function() {
+  $(document).ready(function () {
     // Load state when the country is selected
-    $('#country').change(function() {
-        var country = $(this).val(); // Get selected country
+    $("#country").change(function () {
+      var country = $(this).val(); // Get selected country
 
-        if (country) {
-            $.ajax({
-                url: 'backend/order/state.php',
-                type: 'GET',
-                dataType: 'json',
-                data: { country: country },
-                success: function(data) {
-                    var stateDropdown = $('#state');
-                    stateDropdown.empty();  // Clear existing options
-                    stateDropdown.append('<option value="">Select State</option>');
+      if (country) {
+        $.ajax({
+          url: "backend/order/state.php",
+          type: "GET",
+          dataType: "json",
+          data: { country: country },
+          success: function (data) {
+            var stateDropdown = $("#state");
+            stateDropdown.empty(); // Clear existing options
+            stateDropdown.append('<option value="">Select State</option>');
 
-                    // Add new options for states
-                    $.each(data, function(i, state) {
-                        // Make sure to select the state that was saved in the session
-                        stateDropdown.append('<option value="' + state.id + '" ' + (state.id === "<?php echo isset($_SESSION['state']) ? $_SESSION['state'] : ''; ?>" ? 'selected' : '') + '>' + state.text + '</option>');
-                    });
-
-                    // Re-initialize select2 for the state dropdown
-                    stateDropdown.select2();
-                }
+            // Add new options for states
+            $.each(data, function (i, state) {
+              // Make sure to select the state that was saved in the session
+              stateDropdown.append(
+                '<option value="' +
+                  state.id +
+                  '" ' +
+                  (state.id ===
+                  "<?php echo isset($_SESSION['state']) ? $_SESSION['state'] : ''; ?>"
+                    ? "selected"
+                    : "") +
+                  ">" +
+                  state.text +
+                  "</option>"
+              );
             });
-        }
+
+            // Re-initialize select2 for the state dropdown
+            stateDropdown.select2();
+          },
+        });
+      }
     });
 
     // Trigger change to load states for the selected country
-    $('#country').trigger('change');
+    $("#country").trigger("change");
 
     // Submit the form using AJAX
-    $('#personalInfoForm').submit(function(e) {
-        e.preventDefault();  // Prevent the form from submitting normally
+    $("#personalInfoForm").submit(function (e) {
+      e.preventDefault(); // Prevent the form from submitting normally
 
-        var formData = $(this).serialize();  // Serialize the form data
+      var formData = $(this).serialize(); // Serialize the form data
 
-        $.ajax({
-            url: 'backend/order/information',  // Post the form to the same page
-            type: 'POST',
-            data: formData,
-            success: function(response) {
-                var result = JSON.parse(response);
-                if (result.success) {
-                    // Success Toastr notification
-                    toastr.success("Information saved successfully!", "Success");
-                } else {
-                    // Error Toastr notification
-                    toastr.error("Failed to save information. Please try again.", "Error");
-                }
-            },
-            error: function() {
-                // If there's a request error, show error toastr
-                toastr.error("An error occurred. Please try again.", "Error");
-            }
-        });
+      $.ajax({
+        url: "backend/order/information", // Post the form to the same page
+        type: "POST",
+        data: formData,
+        success: function (response) {
+          var result = JSON.parse(response);
+          if (result.success) {
+            // Success Toastr notification
+            toastr.success("Information saved successfully!", "Success");
+          } else {
+            // Error Toastr notification
+            toastr.error(
+              "Failed to save information. Please try again.",
+              "Error"
+            );
+          }
+        },
+        error: function () {
+          // If there's a request error, show error toastr
+          toastr.error("An error occurred. Please try again.", "Error");
+        },
+      });
     });
 
+    function checkOrderList() {
+      $.ajax({
+        url: "backend/order/info_button.php",
+        type: "GET",
+        data: { poid: "<?php echo $poid; ?>" }, // Pass the poid dynamically
+        dataType: "json",
+        success: function (response) {
+          if (response.hasOrders) {
+            $("#saveBtn").prop("disabled", true); // Disable button
+          } else {
+            $("#saveBtn").prop("disabled", false); // Enable button
+          }
+        },
+      });
+    }
 
-      function checkOrderList() {
-          $.ajax({
-              url: 'backend/order/info_button.php',
-              type: 'GET',
-              data: { poid: '<?php echo $poid; ?>' }, // Pass the poid dynamically
-              dataType: 'json',
-              success: function (response) {
-                  if (response.hasOrders) {
-                      $("#saveBtn").prop("disabled", true); // Disable button
-                  } else {
-                      $("#saveBtn").prop("disabled", false); // Enable button
-                  }
-              }
-          });
-      }
+    // Call function every 5 seconds (adjust as needed)
+    setInterval(checkOrderList, 3000);
 
-      // Call function every 5 seconds (adjust as needed)
-      setInterval(checkOrderList, 500);
+    // Run once when the page loads
+    checkOrderList();
+  });
 
-      // Run once when the page loads
-      checkOrderList();
-
-
-});
 </script>
