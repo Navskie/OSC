@@ -73,7 +73,6 @@
 
 <script>
   $(document).ready(function() {
-
     $('#item_code').select2({
       placeholder: "Select an Option",
       width: '100%',
@@ -179,117 +178,116 @@
     }
 
     function fetchOrderNotification() {
-  $.ajax({
-    url: "backend/order/order_notification.php", // Adjust URL as needed
-    type: "GET",
-    dataType: "json",
-    success: function (response) {
-      if (response.status === "success" && Array.isArray(response.data) && response.data.length > 0) {
-        var requiredUpsellQty = 0;
-        var upsellQty = 0;
-        var premiumQty = 0;
-        var promoQty = 0;
-        var specialPromoQty = 0;
-        var autoFreeQty = 0;
-        var freeQty = 0;
-        var otherCategoryQty = 0;
-        var hasAutoFree = false;
-        var autoFreeItems = []; // Store AUTO FREE items
+      $.ajax({
+        url: "backend/order/order_notification.php", // Adjust URL as needed
+        type: "GET",
+        dataType: "json",
+        success: function (response) {
+          if (response.status === "success" && Array.isArray(response.data) && response.data.length > 0) {
+            var requiredUpsellQty = 0;
+            var upsellQty = 0;
+            var premiumQty = 0;
+            var promoQty = 0;
+            var specialPromoQty = 0;
+            var autoFreeQty = 0;
+            var freeQty = 0;
+            var otherCategoryQty = 0;
+            var hasAutoFree = false;
+            var autoFreeItems = []; // Store AUTO FREE items
 
-        response.data.forEach(function(item) {
-          switch(item.code_category) {
-            case "REQUIRED UPSELL":
-              requiredUpsellQty += parseInt(item.total_qty);
-              break;
-            case "UPSELL":
-              upsellQty += parseInt(item.total_qty);
-              break;
-            case "PREMIUM":
-              premiumQty += parseInt(item.total_qty);
-              break;
-            case "PROMO":
-              promoQty += parseInt(item.total_qty);
-              break;
-            case "SPECIAL PROMO":
-              specialPromoQty += parseInt(item.total_qty);
-              break;
-            case "FREE":
-              freeQty += parseInt(item.total_qty);
-              break;
-            case "AUTO FREE":
-              autoFreeQty += parseInt(item.total_qty);
-              hasAutoFree = true;
-              autoFreeItems.push({ code: item.code, maincode: item.maincode }); // Store both code & maincode
-              break;
-            default:
-              otherCategoryQty += parseInt(item.total_qty);
+            response.data.forEach(function(item) {
+              switch(item.code_category) {
+                case "REQUIRED UPSELL":
+                  requiredUpsellQty += parseInt(item.total_qty);
+                  break;
+                case "UPSELL":
+                  upsellQty += parseInt(item.total_qty);
+                  break;
+                case "PREMIUM":
+                  premiumQty += parseInt(item.total_qty);
+                  break;
+                case "PROMO":
+                  promoQty += parseInt(item.total_qty);
+                  break;
+                case "SPECIAL PROMO":
+                  specialPromoQty += parseInt(item.total_qty);
+                  break;
+                case "FREE":
+                  freeQty += parseInt(item.total_qty);
+                  break;
+                case "AUTO FREE":
+                  autoFreeQty += parseInt(item.total_qty);
+                  hasAutoFree = true;
+                  autoFreeItems.push({ code: item.code, maincode: item.maincode }); // Store both code & maincode
+                  break;
+                default:
+                  otherCategoryQty += parseInt(item.total_qty);
+              }
+            });
+
+            var notificationHtml = "";
+            var disableCheckout = false; // This will control whether to disable checkout button or not
+
+            // Validation checks and building of notificationHtml
+            if ((upsellQty + premiumQty) > 0 && promoQty === 0 && requiredUpsellQty === 0 && specialPromoQty === 0 && otherCategoryQty === 0) {
+              notificationHtml += "<p class='text-danger'>You cannot have only UPSELL or PREMIUM in the table. Please add other Regular Items</p>";
+              disableCheckout = true;
+            }
+
+            if (requiredUpsellQty > 0 && (upsellQty + premiumQty) < requiredUpsellQty) {
+              notificationHtml += "<p class='text-danger'>You need to add UPSELL or PREMIUM with the same quantity as REQUIRED UPSELL.</p>";
+              disableCheckout = true;
+            }
+
+            // ❌ Condition 4: 1 PREMIUM allowed per (PROMO + SPECIAL PROMO + REQUIRED UPSELL)
+            var allowedPremiumQty = promoQty + specialPromoQty + requiredUpsellQty;
+            if (premiumQty > allowedPremiumQty) {
+              notificationHtml += `<p class='text-danger'>You can only add 1 PREMIUM per PROMO, SPECIAL PROMO, or REQUIRED UPSELL.</p>`;
+              disableCheckout = true;
+            }
+
+            if ((upsellQty + premiumQty) > ((promoQty + requiredUpsellQty + specialPromoQty + otherCategoryQty) * 2)) {
+              notificationHtml += "<p class='text-danger'>The total of UPSELL and PREMIUM cannot exceed twice the sum of Regular Items.</p>";
+              disableCheckout = true;
+            }
+
+            // Default notification if no issues
+            if (notificationHtml === "") {
+              notificationHtml = "<p>All items are good to go for checkout!</p>";
+            }
+
+            // ✅ Show "Grab Exclusive Items" button only if `AUTO FREE` is greater than `FREE`
+            if (hasAutoFree && autoFreeQty > freeQty) {
+              autoFreeItems.forEach(function(item) {
+                notificationHtml += `<button type="button" class="btn btn-primary mt-2" 
+                                      data-bs-toggle="modal" 
+                                      data-bs-target="#autoFreeModal">
+                                      Grab Exclusive Items
+                                    </button>`;
+              });
+            }
+
+            // Update the notifications section
+            $("#orderNotification").html(notificationHtml);
+
+            // Enable or Disable the Checkout button based on conditions
+            if (disableCheckout) {
+              $('#btnCheckOut').prop('disabled', true); // Disable the Checkout button if any validation failed
+            } else {
+              $('#btnCheckOut').prop('disabled', false); // Enable the Checkout button if all conditions are met
+            }
+
+          } else {
+            $("#orderNotification").html("<p>No order notifications available</p>");
+            $('#btnCheckOut').prop('disabled', true); // Disable Checkout if no notifications
           }
-        });
-
-        var notificationHtml = "";
-        var disableCheckout = false; // This will control whether to disable checkout button or not
-
-        // Validation checks and building of notificationHtml
-        if ((upsellQty + premiumQty) > 0 && promoQty === 0 && requiredUpsellQty === 0 && specialPromoQty === 0 && otherCategoryQty === 0) {
-          notificationHtml += "<p class='text-danger'>You cannot have only UPSELL or PREMIUM in the table. Please add other Regular Items</p>";
-          disableCheckout = true;
+        },
+        error: function () {
+          $("#orderNotification").html("<p>Error fetching order notifications</p>");
+          $('#btnCheckOut').prop('disabled', true); // Disable Checkout on error
         }
-
-        if (requiredUpsellQty > 0 && (upsellQty + premiumQty) < requiredUpsellQty) {
-          notificationHtml += "<p class='text-danger'>You need to add UPSELL or PREMIUM with the same quantity as REQUIRED UPSELL.</p>";
-          disableCheckout = true;
-        }
-
-        // ❌ Condition 4: 1 PREMIUM allowed per (PROMO + SPECIAL PROMO + REQUIRED UPSELL)
-        var allowedPremiumQty = promoQty + specialPromoQty + requiredUpsellQty;
-        if (premiumQty > allowedPremiumQty) {
-          notificationHtml += `<p class='text-danger'>You can only add 1 PREMIUM per PROMO, SPECIAL PROMO, or REQUIRED UPSELL.</p>`;
-          disableCheckout = true;
-        }
-
-        if ((upsellQty + premiumQty) > ((promoQty + requiredUpsellQty + specialPromoQty + otherCategoryQty) * 2)) {
-          notificationHtml += "<p class='text-danger'>The total of UPSELL and PREMIUM cannot exceed twice the sum of Regular Items.</p>";
-          disableCheckout = true;
-        }
-
-        // Default notification if no issues
-        if (notificationHtml === "") {
-          notificationHtml = "<p>All items are good to go for checkout!</p>";
-        }
-
-        // ✅ Show "Grab Exclusive Items" button only if `AUTO FREE` is greater than `FREE`
-        if (hasAutoFree && autoFreeQty > freeQty) {
-          autoFreeItems.forEach(function(item) {
-            notificationHtml += `<button type="button" class="btn btn-primary mt-2" 
-                                  data-bs-toggle="modal" 
-                                  data-bs-target="#autoFreeModal">
-                                  Grab Exclusive Items
-                                </button>`;
-          });
-        }
-
-        // Update the notifications section
-        $("#orderNotification").html(notificationHtml);
-
-        // Enable or Disable the Checkout button based on conditions
-        if (disableCheckout) {
-          $('#btnCheckOut').prop('disabled', true); // Disable the Checkout button if any validation failed
-        } else {
-          $('#btnCheckOut').prop('disabled', false); // Enable the Checkout button if all conditions are met
-        }
-
-      } else {
-        $("#orderNotification").html("<p>No order notifications available</p>");
-        $('#btnCheckOut').prop('disabled', true); // Disable Checkout if no notifications
-      }
-    },
-    error: function () {
-      $("#orderNotification").html("<p>Error fetching order notifications</p>");
-      $('#btnCheckOut').prop('disabled', true); // Disable Checkout on error
+      });
     }
-  });
-}
-
 
     $(document).on('click', '.delete-btn', function() {
       var orderCode = $(this).data('id');
