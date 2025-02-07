@@ -3,7 +3,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="autoFreeModalLabel">Free Items</h5>
+        <h5 class="modal-title" id="autoFreeModalLabel">Get Bonus Items</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
@@ -24,7 +24,7 @@
           </div>
 
           <div class="mb-3">
-            <label>Free Items</label>
+            <label>Bonus Items</label>
             <select name="freeItem" id="free" class="form-control select2"></select>
           </div>
 
@@ -85,46 +85,50 @@ $(document).ready(function() {
   });
 
   // Handle form submission
+  // Handle form submission
   $("#autoFreeForm").on("submit", function(e) {
-    e.preventDefault(); // Prevent default form submission
+      e.preventDefault(); // Prevent default form submission
 
-    var mainItem = $("#mainItemCode").val();
-    var freeItem = $("#free").val();
+      var mainItem = $("#mainItemCode").val();
+      var freeItem = $("#free").val();
 
-    // Validate input before sending
-    if (!mainItem || !freeItem) {
-      toastr.error("Please select both main item and free item!");
-      return;
-    }
-
-    $.ajax({
-      url: "backend/order/freeProcess", 
-      type: "POST",
-      data: $(this).serialize(), // Serialize form data
-      dataType: "json",
-      success: function(response) {
-        if (response.status === "success") {
-          toastr.success(response.message);
-
-          // Hide the modal automatically after success
-          $("#autoFreeModal").modal("hide");
-
-          // Reset the form
-          $("#autoFreeForm")[0].reset();
-
-          // Reset select2 dropdown
-          $("#free").val(null).trigger("change");
-
-          // Refresh the table (use DataTable API or AJAX reload method)
-          $("#orderTable").DataTable().ajax.reload(null, false); // Replace 'orderTable' with your actual table ID
-        } else {
-          toastr.error(response.message);
-        }
-      },
-      error: function() {
-        toastr.error("Error adding free item. Please try again.");
+      // Validate input before sending
+      if (!mainItem || !freeItem) {
+          toastr.error("Please select both main item and free item!");
+          return;
       }
-    });
+
+      $.ajax({
+          url: "backend/order/freeProcess", 
+          type: "POST",
+          data: $(this).serialize(), // Serialize form data
+          dataType: "json",
+          success: function(response) {
+              if (response.status === "success") {
+                  toastr.success(response.message);
+
+                  // Hide the modal automatically after success
+                  $("#autoFreeModal").modal("hide");
+
+                  // Reset the form
+                  $("#autoFreeForm")[0].reset();
+
+                  // Reset select2 dropdown
+                  $("#free").val(null).trigger("change");
+
+                  // Refresh the table (use DataTable API or AJAX reload method)
+                  $("#orderTable").DataTable().ajax.reload(null, false); 
+
+                  location.reload();
+
+              } else {
+                  toastr.error(response.message);
+              }
+          },
+          error: function() {
+              toastr.error("Error adding free item. Please try again.");
+          }
+      });
   });
 });
 </script>

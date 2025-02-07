@@ -148,139 +148,147 @@
     });
 
     function fetchOrderDetails() {
-      var table = $('#orderTable').DataTable({
-        paging: true,
-        searching: true,
-        ordering: true,
-        info: true,
-        bDestroy: true // Destroy the previous DataTable instance before re-initializing
-      });
-
-      $.ajax({
-        url: "backend/order/items_list",
-        type: "GET",
-        dataType: "json",
-        success: function(response) {
-          if (!response || response.status !== "success" || !Array.isArray(response.data)) {
-            toastr.error("No data found.", "Alert");
-            table.clear().draw(); // Clear table when no data is available
-            return;
-          }
-
-          table.clear().draw(); // Clear current table data before adding new data
-
-          if (response.data.length > 0) {
-            response.data.forEach(item => {
-              table.row.add([
-                item.ol_code,
-                item.ol_desc,
-                item.ol_qty,
-                item.ol_price,
-                item.ol_subtotal,
-                `<button class="btn btn-danger btn-sm delete-btn" data-id="${item.ol_code}">Delete</button>`
-              ]).draw(false);
-            });
-          } else {
-            $("#orderDetails").html(`<tr><td colspan="6" class="text-center text-muted">No order details found.</td></tr>`);
-          }
-
-          $("#orderCount").text("Total Records: " + response.data.length);
-        },
-        error: function(xhr, status, error) {
-          table.clear().draw();  // Clear table in case of error
-          $("#orderDetails").html(`<tr><td colspan="6" class="text-center text-danger">Error loading data.</td></tr>`);
-          toastr.error("Error fetching data: " + xhr.responseText, "Error");
-        }
-      });
+        var table = $('#orderTable').DataTable({
+            destroy: true,  // ✅ Destroy previous instance before re-initializing
+            processing: true,
+            serverSide: false, // Set to true only if using server-side processing
+            ajax: {
+                url: "backend/order/items_list.php",
+                type: "GET",
+                dataType: "json",
+                error: function(xhr, textStatus, errorThrown) {
+                    console.error("AJAX Error:", textStatus, errorThrown);
+                    console.log("Server Response:", xhr.responseText); // Check JSON output
+                    toastr.error("Error loading data. Check console for details.");
+                }
+            },
+            columns: [
+                { data: "ol_code" },
+                { data: "ol_desc" },
+                { data: "ol_qty" },
+                { data: "ol_price" },
+                { data: "ol_subtotal" },
+                {
+                    data: null,
+                    render: function(data, type, row) {
+                        return `<button class="btn btn-danger btn-sm delete-btn" data-id="${row.ol_code}">Delete</button>`;
+                    }
+                }
+            ]
+        });
     }
 
     function fetchOrderNotification() {
-      $.ajax({
-        url: "backend/order/order_notification.php", // Adjust URL as needed
-        type: "GET",
-        dataType: "json",
-        success: function (response) {
-          if (response.status === "success" && Array.isArray(response.data) && response.data.length > 0) {
-            var requiredUpsellQty = 0;
-            var upsellQty = 0;
-            var premiumQty = 0;
-            var promoQty = 0;
-            var specialPromoQty = 0;
-            var autoFreeQty = 0;
-            var otherCategoryQty = 0;
-            var hasAutoFree = false;
-            var autoFreeItems = []; // Store AUTO FREE items
+  $.ajax({
+    url: "backend/order/order_notification.php", // Adjust URL as needed
+    type: "GET",
+    dataType: "json",
+    success: function (response) {
+      if (response.status === "success" && Array.isArray(response.data) && response.data.length > 0) {
+        var requiredUpsellQty = 0;
+        var upsellQty = 0;
+        var premiumQty = 0;
+        var promoQty = 0;
+        var specialPromoQty = 0;
+        var autoFreeQty = 0;
+        var freeQty = 0;
+        var otherCategoryQty = 0;
+        var hasAutoFree = false;
+        var autoFreeItems = []; // Store AUTO FREE items
 
-            response.data.forEach(function(item) {
-              switch(item.code_category) {
-                case "REQUIRED UPSELL":
-                  requiredUpsellQty += parseInt(item.total_qty);
-                  break;
-                case "UPSELL":
-                  upsellQty += parseInt(item.total_qty);
-                  break;
-                case "PREMIUM":
-                  premiumQty += parseInt(item.total_qty);
-                  break;
-                case "PROMO":
-                  promoQty += parseInt(item.total_qty);
-                  break;
-                case "SPECIAL PROMO":
-                  specialPromoQty += parseInt(item.total_qty);
-                  break;
-                case "AUTO FREE":
-                  autoFreeQty += parseInt(item.total_qty);
-                  hasAutoFree = true;
-                  autoFreeItems.push({ code: item.code, maincode: item.maincode }); // Store both code & maincode
-                  break;
-                default:
-                  otherCategoryQty += parseInt(item.total_qty);
-              }
-            });
-
-            var notificationHtml = "";
-
-            if ((upsellQty + premiumQty) > 0 && promoQty === 0 && requiredUpsellQty === 0 && specialPromoQty === 0 && otherCategoryQty === 0) {
-              notificationHtml += "<p class='text-danger'>You cannot have only UPSELL or PREMIUM in the table. Please add other Regular Items</p>";
-            }
-
-            if (requiredUpsellQty > 0 && (upsellQty + premiumQty) < requiredUpsellQty) {
-              notificationHtml += "<p class='text-danger'>You need to add UPSELL or PREMIUM with the same quantity as REQUIRED UPSELL.</p>";
-            }
-
-            if (premiumQty > 1) {
-              notificationHtml += "<p class='text-danger'>You can only add 1 PREMIUM per Regular Item.</p>";
-            }
-
-            if ((upsellQty + premiumQty) > ((promoQty + requiredUpsellQty + specialPromoQty + otherCategoryQty) * 2)) {
-              notificationHtml += "<p class='text-danger'>The total of UPSELL and PREMIUM cannot exceed twice the sum of Regular Items.</p>";
-            }
-
-            if (notificationHtml === "") {
-              notificationHtml = "<p>All items are good to go for checkout!</p>";
-            }
-
-            // If AUTO FREE exists, add buttons for each item with correct code
-            if (hasAutoFree) {
-              autoFreeItems.forEach(function(item) {
-                notificationHtml += `<button type="button" class="btn btn-primary mt-2" 
-                                      data-bs-toggle="modal" 
-                                      data-bs-target="#autoFreeModal">
-                                      Claim Free Items
-                                    </button>`;
-              });
-            }
-
-            $("#orderNotification").html(notificationHtml);
-          } else {
-            $("#orderNotification").html("<p>No order notifications available</p>");
+        response.data.forEach(function(item) {
+          switch(item.code_category) {
+            case "REQUIRED UPSELL":
+              requiredUpsellQty += parseInt(item.total_qty);
+              break;
+            case "UPSELL":
+              upsellQty += parseInt(item.total_qty);
+              break;
+            case "PREMIUM":
+              premiumQty += parseInt(item.total_qty);
+              break;
+            case "PROMO":
+              promoQty += parseInt(item.total_qty);
+              break;
+            case "SPECIAL PROMO":
+              specialPromoQty += parseInt(item.total_qty);
+              break;
+            case "FREE":
+              freeQty += parseInt(item.total_qty);
+              break;
+            case "AUTO FREE":
+              autoFreeQty += parseInt(item.total_qty);
+              hasAutoFree = true;
+              autoFreeItems.push({ code: item.code, maincode: item.maincode }); // Store both code & maincode
+              break;
+            default:
+              otherCategoryQty += parseInt(item.total_qty);
           }
-        },
-        error: function () {
-          $("#orderNotification").html("<p>Error fetching order notifications</p>");
+        });
+
+        var notificationHtml = "";
+        var disableCheckout = false; // This will control whether to disable checkout button or not
+
+        // Validation checks and building of notificationHtml
+        if ((upsellQty + premiumQty) > 0 && promoQty === 0 && requiredUpsellQty === 0 && specialPromoQty === 0 && otherCategoryQty === 0) {
+          notificationHtml += "<p class='text-danger'>You cannot have only UPSELL or PREMIUM in the table. Please add other Regular Items</p>";
+          disableCheckout = true;
         }
-      });
+
+        if (requiredUpsellQty > 0 && (upsellQty + premiumQty) < requiredUpsellQty) {
+          notificationHtml += "<p class='text-danger'>You need to add UPSELL or PREMIUM with the same quantity as REQUIRED UPSELL.</p>";
+          disableCheckout = true;
+        }
+
+        // ❌ Condition 4: 1 PREMIUM allowed per (PROMO + SPECIAL PROMO + REQUIRED UPSELL)
+        var allowedPremiumQty = promoQty + specialPromoQty + requiredUpsellQty;
+        if (premiumQty > allowedPremiumQty) {
+          notificationHtml += `<p class='text-danger'>You can only add 1 PREMIUM per PROMO, SPECIAL PROMO, or REQUIRED UPSELL.</p>`;
+          disableCheckout = true;
+        }
+
+        if ((upsellQty + premiumQty) > ((promoQty + requiredUpsellQty + specialPromoQty + otherCategoryQty) * 2)) {
+          notificationHtml += "<p class='text-danger'>The total of UPSELL and PREMIUM cannot exceed twice the sum of Regular Items.</p>";
+          disableCheckout = true;
+        }
+
+        // Default notification if no issues
+        if (notificationHtml === "") {
+          notificationHtml = "<p>All items are good to go for checkout!</p>";
+        }
+
+        // ✅ Show "Grab Exclusive Items" button only if `AUTO FREE` is greater than `FREE`
+        if (hasAutoFree && autoFreeQty > freeQty) {
+          autoFreeItems.forEach(function(item) {
+            notificationHtml += `<button type="button" class="btn btn-primary mt-2" 
+                                  data-bs-toggle="modal" 
+                                  data-bs-target="#autoFreeModal">
+                                  Grab Exclusive Items
+                                </button>`;
+          });
+        }
+
+        // Update the notifications section
+        $("#orderNotification").html(notificationHtml);
+
+        // Enable or Disable the Checkout button based on conditions
+        if (disableCheckout) {
+          $('#btnCheckOut').prop('disabled', true); // Disable the Checkout button if any validation failed
+        } else {
+          $('#btnCheckOut').prop('disabled', false); // Enable the Checkout button if all conditions are met
+        }
+
+      } else {
+        $("#orderNotification").html("<p>No order notifications available</p>");
+        $('#btnCheckOut').prop('disabled', true); // Disable Checkout if no notifications
+      }
+    },
+    error: function () {
+      $("#orderNotification").html("<p>Error fetching order notifications</p>");
+      $('#btnCheckOut').prop('disabled', true); // Disable Checkout on error
     }
+  });
+}
 
 
     $(document).on('click', '.delete-btn', function() {
