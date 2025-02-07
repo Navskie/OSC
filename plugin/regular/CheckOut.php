@@ -1,6 +1,5 @@
 <div class="collapse" id="CheckOut">
   <div class="row">
-    
     <div class="col-md-9 col-12">
       <div class="card invoice-info-card">
         <div class="card-body">
@@ -45,19 +44,8 @@
                         <th>Subtotal</th>
                       </tr>
                     </thead>
-                    <tbody>
-                      <?php
-                        $orderDetails = mysqli_query($conn, "SELECT * FROM upti_order_list WHERE ol_poid = '$poid'");
-                        foreach ($orderDetails as $orderData) {
-                      ?>
-                      <tr>
-                        <td><?php echo $orderData['ol_code'] ?></td>
-                        <td><?php echo $orderData['ol_desc'] ?></td>
-                        <td><?php echo $orderData['ol_qty'] ?></td>
-                        <td><?php echo $orderData['ol_price'] ?></td>
-                        <td class="text-end subtotal"><?php echo $orderData['ol_subtotal'] ?></td>
-                      </tr>
-                      <?php } ?>
+                    <tbody id="orderTableBody">
+                      <!-- Order details will be dynamically inserted here -->
                     </tbody>
                   </table>
                 </div>
@@ -66,9 +54,7 @@
           </div>
 
           <div class="row align-items-center justify-content-center">
-            <div class="col-lg-6 col-md-6">
-
-            </div>
+            <div class="col-lg-6 col-md-6"></div>
             <div class="col-lg-6 col-md-6">
               <div class="invoice-total-card">
                 <div class="invoice-total-box">
@@ -98,7 +84,7 @@
 <script>
   $(document).ready(function() {
     function fetchInvoiceData() {
-        let poid = "<?php echo $poid; ?>"; // Kukunin ang PO ID mula sa PHP
+        let poid = "<?php echo $poid; ?>"; // Get POID from PHP
 
         $.ajax({
             url: 'backend/order/checkoutInfo',
@@ -106,55 +92,58 @@
             data: { poid: poid },
             dataType: 'json',
             success: function(response) {
-                // Update Customer Details
-                $('.invoice-name').text(response.customer.name);
-                $('.invoice-details').html(
-                    response.customer.mobile + "<br>" +
-                    response.customer.email + "<br>" +
-                    response.customer.address + "<br>" +
-                    response.customer.country + "<br>" +
-                    response.customer.state
-                );
+                if (response.status === 'success') {
+                    let tableBody = $("#orderTableBody");
+                    tableBody.empty(); // Clear existing data
 
-                // Update Order Table
-                let orderTable = $(".invoice-table tbody");
-                orderTable.empty(); // Clear existing rows
+                    response.data.forEach(order => {
+                        let row = `<tr>
+                                      <td>${order.ol_code}</td>
+                                      <td>${order.ol_desc}`;
 
-                response.orders.forEach(function(order) {
-                    orderTable.append(`
-                        <tr>
-                            <td>${order.ol_code}</td>
-                            <td>${order.ol_desc}</td>
-                            <td>${order.ol_qty}</td>
-                            <td>${order.ol_price}</td>
-                            <td class="text-end subtotal">${order.ol_subtotal}</td>
-                        </tr>
-                    `);
-                });
+                        if (order.bundles.length > 0) {
+                            row += `<br><strong>Bundle Includes:</strong><br>`;
+                            order.bundles.forEach(bundle => {
+                                row += `<span>${bundle.p_s_qty} - ${bundle.p_s_desc}</span><br>`;
+                            });
+                        }
 
-                // Call function to calculate total
-                calculateTotal();
+                        row += `</td>
+                                <td>${order.ol_qty}</td>
+                                <td>${order.ol_price}</td>
+                                <td class="text-end subtotal">${order.ol_subtotal}</td>
+                              </tr>`;
+                        tableBody.append(row);
+                    });
+
+                    calculateTotal();
+                } else {
+                    console.error(response.message);
+                    alert("Error: " + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", error);
+                console.log("XHR Response:", xhr.responseText);
+                alert("Error fetching invoice data. Check console for details.");
             }
         });
     }
 
     function calculateTotal() {
         let totalAmount = 0;
-
-        // Iterate through all subtotal values in the table
         $(".subtotal").each(function() {
-            let subtotalValue = parseFloat($(this).text()) || 0; // Convert to number
-            totalAmount += subtotalValue;
+            totalAmount += parseFloat($(this).text()) || 0;
         });
 
-        let shippingFee = parseFloat($(".shipping-fee").text()) || 0; // Get shipping fee
-        let finalTotal = totalAmount + shippingFee;
-
+        let shippingFee = parseFloat($(".shipping-fee").text()) || 0;
         $(".subtotal-amount").text(totalAmount.toFixed(2));
-        $(".total-amount").text(finalTotal.toFixed(2));
+        $(".total-amount").text((totalAmount + shippingFee).toFixed(2));
     }
 
-    // I-refresh ang data kada 3 segundo
+    // Initial fetch and refresh every 3 seconds
+    fetchInvoiceData();
     setInterval(fetchInvoiceData, 3000);
 });
+
 </script>
