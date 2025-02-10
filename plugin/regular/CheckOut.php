@@ -95,14 +95,14 @@
               <div class="col-12 mb-3" id="paymentDetails" style="display: none;">
                 <div class="row">
                   <div class="col-4 d-flex justify-content-center align-items-center w-100 mb-3">
-                    <img src="assets/img/replace.png" alt="image" class="img-fluid rounded" width="200" />
+                    <img src="assets/img/replace2.png" alt="image"  class="img-fluid rounded" width="200" />
                   </div>
 
                   <div class="col-8 d-flex justify-content-center align-items-center w-100">
                     <div class="form-group students-up-files">
                       <div class="uplod">
                         <label class="file-upload image-upbtn mb-0">
-                          Choose File <input type="file" id="fileInput">
+                          Choose File <input type="file" id="imagesReceipt">
                         </label>
                       </div>
                     </div>
@@ -142,10 +142,10 @@
 
 <script>
   $(document).ready(function() {
-    // Temporary image placeholder
-    let defaultImage = 'assets/img/placeholder.png';
-    $('#paymentDetails img').attr('src', defaultImage);
-    
+    let defaultImage = 'assets/img/replace2.png';
+    $('#imagesReceipt').attr('src', defaultImage);
+  
+    // Show/Hide payment details based on payment method selection
     $('#paymentMethod').change(function() {
       if ($(this).val() === "E-Payment") {
         $('#paymentDetails').fadeIn();
@@ -154,13 +154,21 @@
       }
     });
 
-    // Image preview before upload
-    $("#fileInput").change(function(event) {
-      let reader = new FileReader();
-      reader.onload = function(e) {
-        $('#paymentDetails img').attr('src', e.target.result);
-      };
-      reader.readAsDataURL(event.target.files[0]);
+    $('#imagesReceipt').change(function(e) {
+      var file = e.target.files[0];
+
+      if (file) {
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+          var uploadedImage = e.target.result; // This will contain the base64 string
+
+          // Now update the image preview using the base64 string
+          $('#paymentDetails img').attr('src', uploadedImage);
+        };
+
+        reader.readAsDataURL(file); // Read the file as a Data URL (base64-encoded image)
+      }
     });
 
     function fetchInvoiceData() {
@@ -251,24 +259,23 @@
     // Submit form using AJAX
     $('#purchaseButton').click(function(e) {
       e.preventDefault();
-      
+
       // Collect form data including payment method, agreement, and receipt image if provided
       let formData = new FormData();
       formData.append('paymentMethod', $('#paymentMethod').val());
       formData.append('agreeStatement', $('#agreeStatement').is(':checked'));
-
       formData.append('shippingFee', $('.shipping-fee').text());  // Shipping Fee
       formData.append('totalAmount', $('.total-amount').text());  // Total Amount
-      
+
       // Check if a file is selected and append it to the FormData
-      let file = $('#fileInput')[0].files[0];
+      let file = $('#imagesReceipt')[0].files[0];  // This should be 'imagesReceipt' instead of 'fileInput'
       if (file) {
         formData.append('receiptImage', file);
       }
 
       // AJAX request to submit the form
       $.ajax({
-        url: 'backend/order/checkoutProcess', // Your backend PHP file to handle the process
+        url: 'backend/order/checkoutProcess', // Make sure this is the correct PHP file to handle the form
         type: 'POST',
         data: formData,
         contentType: false,
@@ -277,6 +284,10 @@
           let res = JSON.parse(response);
           if (res.status === 'success') {
             toastr.success("Checkout completed successfully!", "Success");
+
+            // Clear localStorage once checkout is successful
+            localStorage.clear();  // This will clear all items stored in localStorage
+
             setTimeout(function() {
               window.location.href = 'purchaselist'; // Redirect to the list page after successful checkout
             }, 2000);
@@ -290,6 +301,8 @@
         }
       });
     });
+
+
 
     // Initial fetch and refresh every 3 seconds
     fetchInvoiceData();

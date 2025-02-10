@@ -164,25 +164,33 @@
   $("#personalInfoForm").submit(function (e) {
     e.preventDefault();
 
-    var formData = $(this).serialize();
+    var formData = new FormData(this); // Use FormData to collect all form data including files
+    var fileInput = $('#fileInput')[0]; // Get the file input element
+
+    if (fileInput.files.length > 0) {
+        formData.append('image', fileInput.files[0]); // Append the image file to FormData
+    }
 
     $.ajax({
-      url: "backend/order/information",
-      type: "POST",
-      data: formData,
-      success: function (response) {
-        var result = JSON.parse(response);
-        if (result.success) {
-          toastr.success("Information saved successfully!", "Success");
-        } else {
-          toastr.error("Failed to save information. Please try again.", "Error");
+        url: 'backend/order/information', // Endpoint that handles both form data and image upload
+        type: 'POST',
+        data: formData,
+        processData: false,  // Don't process the data
+        contentType: false,  // Don't set content type
+        success: function(response) {
+            var result = JSON.parse(response);
+            if (result.success) {
+                toastr.success("Information saved successfully!", "Success");
+            } else {
+                toastr.error("Failed to save information. Please try again.", "Error");
+            }
+        },
+        error: function() {
+            toastr.error("An error occurred. Please try again.", "Error");
         }
-      },
-      error: function () {
-        toastr.error("An error occurred. Please try again.", "Error");
-      },
     });
   });
+
 
   function checkOrderList() {
     $.ajax({
