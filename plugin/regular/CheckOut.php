@@ -1,4 +1,5 @@
 <div class="collapse" id="CheckOut">
+<form action="your_checkout_handler.php" method="POST" enctype="multipart/form-data">
   <div class="row">
     <div class="col-md-8 col-12">
       <div class="card invoice-info-card">
@@ -137,6 +138,7 @@
       </div>
     </div>
   </div>
+</form>
 </div>
 
 <script>
@@ -196,9 +198,6 @@
             });
 
             calculateTotal();
-          } else {
-            console.error(response.message);
-            alert("Error: " + response.message);
           }
         },
         error: function(xhr, status, error) {
@@ -224,64 +223,48 @@
       $('#purchaseButton').prop('disabled', !this.checked);
     });
 
-    // Updated JavaScript with Toastr
-$(document).ready(function() {
-  // Temporary image placeholder
-  let defaultImage = 'assets/img/placeholder.png';
-  $('#paymentDetails img').attr('src', defaultImage);
-  
-  $('#paymentMethod').change(function() {
-    if ($(this).val() === "E-Payment") {
-      $('#paymentDetails').fadeIn();
-    } else {
-      $('#paymentDetails').fadeOut();
-    }
-  });
+    // Submit form using AJAX
+    $('#purchaseButton').click(function(e) {
+      e.preventDefault();
+      
+      // Collect form data including payment method, agreement, and receipt image if provided
+      let formData = new FormData();
+      formData.append('paymentMethod', $('#paymentMethod').val());
+      formData.append('agreeStatement', $('#agreeStatement').is(':checked'));
 
-  // Image preview before upload
-  $("#fileInput").change(function(event) {
-    let reader = new FileReader();
-    reader.onload = function(e) {
-      $('#paymentDetails img').attr('src', e.target.result);
-    };
-    reader.readAsDataURL(event.target.files[0]);
-  });
-
-  // Submit form using AJAX
-  $('#purchaseButton').click(function(e) {
-    e.preventDefault();
-    let formData = new FormData();
-    formData.append('paymentMethod', $('#paymentMethod').val());
-    formData.append('agreeStatement', $('#agreeStatement').is(':checked'));
-    let file = $('#fileInput')[0].files[0];
-    if (file) {
-      formData.append('receiptImage', file);
-    }
-
-    $.ajax({
-      url: 'backend/order/submit_checkout',
-      type: 'POST',
-      data: formData,
-      contentType: false,
-      processData: false,
-      success: function(response) {
-        let res = JSON.parse(response);
-        if (res.status === 'success') {
-          toastr.success("Data loaded successfully!", "Success");
-          setTimeout(function() {
-            window.location.href = 'list.php';
-          }, 2000);
-        } else {
-          toastr.error('Error: ' + res.message, 'Error');
-        }
-      },
-      error: function(xhr, status, error) {
-        console.error('AJAX Error:', error);
-        toastr.error('Error submitting checkout. Check console for details.', 'Error');
+      formData.append('shippingFee', $('.shipping-fee').text());  // Shipping Fee
+      formData.append('totalAmount', $('.total-amount').text());  // Total Amount
+      
+      // Check if a file is selected and append it to the FormData
+      let file = $('#fileInput')[0].files[0];
+      if (file) {
+        formData.append('receiptImage', file);
       }
+
+      // AJAX request to submit the form
+      $.ajax({
+        url: 'backend/order/checkoutProcess', // Your backend PHP file to handle the process
+        type: 'POST',
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function(response) {
+          let res = JSON.parse(response);
+          if (res.status === 'success') {
+            toastr.success("Checkout completed successfully!", "Success");
+            setTimeout(function() {
+              window.location.href = 'purchaselist'; // Redirect to the list page after successful checkout
+            }, 2000);
+          } else {
+            toastr.error('Error: ' + res.message, 'Error');
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('AJAX Error:', error);
+          toastr.error('Error submitting checkout. Check console for details.', 'Error');
+        }
+      });
     });
-  });
-});
 
 
     // Initial fetch and refresh every 3 seconds
