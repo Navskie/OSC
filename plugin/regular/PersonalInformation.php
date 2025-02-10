@@ -38,10 +38,27 @@
               </div>
 
               <!-- Complete Address -->
-              <div class="col-xl-8 col-md-6 col-sm-12 col-12">
+              <div class="col-xl-4 col-md-6 col-sm-12 col-12">
                 <div class="form-group">
                   <label>Complete Address</label>
                   <textarea name="address" class="form-control"><?php echo isset($_SESSION['address']) ? $_SESSION['address'] : ''; ?></textarea>
+                </div>
+              </div>
+
+              <div class="col-xl-4 col-md-6 col-sm-12 col-12">
+                <div class="row">
+                  <div class="col-4 d-flex justify-content-center align-items-center w-100 mb-3">
+                    <img src="assets/img/replace.png" alt="image" id="uploadedImg" class="img-fluid rounded" width="200" />
+                  </div>
+                  <div class="col-8 d-flex justify-content-center align-items-center w-100">
+                    <div class="form-group students-up-files">
+                      <div class="uplod">
+                        <label class="file-upload image-upbtn mb-0">
+                          Upload Image Address <input type="file" id="fileInput">
+                        </label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -50,6 +67,7 @@
                 <div class="form-group">
                   <label>Delivery Option</label>
                   <select name="delivery_option" class="form-control">
+                    <option value="">Select Option</option>
                     <option value="Post Office Pick Up" <?php echo (isset($_SESSION['delivery_option']) && $_SESSION['delivery_option'] == 'Post Office Pick Up') ? 'selected' : ''; ?>>Post Office Pick Up</option>
                     <option value="Direct Mail Box" <?php echo (isset($_SESSION['delivery_option']) && $_SESSION['delivery_option'] == 'Direct Mail Box') ? 'selected' : ''; ?>>Direct Mail Box</option>
                   </select>
@@ -81,11 +99,11 @@
               </div>
 
               <?php
-            // Check if there are any records in upti_order_list
-            $result = $conn->query("SELECT COUNT(*) AS count FROM upti_order_list WHERE ol_poid = '$poid'");
-            $hasOrders = $result->fetch_assoc()['count'];
-            $disabled = ($hasOrders > 0) ? 'disabled' : ''; // Assign 'disabled' only if there are orders
-            ?>
+              // Check if there are any records in upti_order_list
+              $result = $conn->query("SELECT COUNT(*) AS count FROM upti_order_list WHERE ol_poid = '$poid'");
+              $hasOrders = $result->fetch_assoc()['count'];
+              $disabled = ($hasOrders > 0) ? 'disabled' : ''; // Assign 'disabled' only if there are orders
+              ?>
 
             <!-- Save Information Button -->
             <div class="col-xl-4 col-md-6 col-sm-12 col-12">
@@ -104,99 +122,113 @@
 </div>
 <script>
   $(document).ready(function () {
-    // Load state when the country is selected
-    $("#country").change(function () {
-      var country = $(this).val(); // Get selected country
+  // Country and State Dropdown
+  $("#country").change(function () {
+    var country = $(this).val();
 
-      if (country) {
-        $.ajax({
-          url: "backend/order/state.php",
-          type: "GET",
-          dataType: "json",
-          data: { country: country },
-          success: function (data) {
-            var stateDropdown = $("#state");
-            stateDropdown.empty(); // Clear existing options
-            stateDropdown.append('<option value="">Select State</option>');
-
-            // Add new options for states
-            $.each(data, function (i, state) {
-              // Make sure to select the state that was saved in the session
-              stateDropdown.append(
-                '<option value="' +
-                  state.id +
-                  '" ' +
-                  (state.id ===
-                  "<?php echo isset($_SESSION['state']) ? $_SESSION['state'] : ''; ?>"
-                    ? "selected"
-                    : "") +
-                  ">" +
-                  state.text +
-                  "</option>"
-              );
-            });
-
-            // Re-initialize select2 for the state dropdown
-            stateDropdown.select2();
-          },
-        });
-      }
-    });
-
-    // Trigger change to load states for the selected country
-    $("#country").trigger("change");
-
-    // Submit the form using AJAX
-    $("#personalInfoForm").submit(function (e) {
-      e.preventDefault(); // Prevent the form from submitting normally
-
-      var formData = $(this).serialize(); // Serialize the form data
-
+    if (country) {
       $.ajax({
-        url: "backend/order/information", // Post the form to the same page
-        type: "POST",
-        data: formData,
-        success: function (response) {
-          var result = JSON.parse(response);
-          if (result.success) {
-            // Success Toastr notification
-            toastr.success("Information saved successfully!", "Success");
-          } else {
-            // Error Toastr notification
-            toastr.error(
-              "Failed to save information. Please try again.",
-              "Error"
-            );
-          }
-        },
-        error: function () {
-          // If there's a request error, show error toastr
-          toastr.error("An error occurred. Please try again.", "Error");
-        },
-      });
-    });
-
-    function checkOrderList() {
-      $.ajax({
-        url: "backend/order/info_button.php",
+        url: "backend/order/state.php",
         type: "GET",
-        data: { poid: "<?php echo $poid; ?>" }, // Pass the poid dynamically
         dataType: "json",
-        success: function (response) {
-          if (response.hasOrders) {
-            $("#saveBtn").prop("disabled", true); // Disable button
-          } else {
-            $("#saveBtn").prop("disabled", false); // Enable button
-          }
+        data: { country: country },
+        success: function (data) {
+          var stateDropdown = $("#state");
+          stateDropdown.empty();
+          stateDropdown.append('<option value="">Select State</option>');
+
+          $.each(data, function (i, state) {
+            stateDropdown.append(
+              '<option value="' +
+                state.id +
+                '" ' +
+                (state.id ===
+                "<?php echo isset($_SESSION['state']) ? $_SESSION['state'] : ''; ?>" 
+                  ? "selected"
+                  : "") +
+                ">" +
+                state.text +
+                "</option>"
+            );
+          });
+
+          stateDropdown.select2();
         },
       });
     }
-
-    // Call function every 5 seconds (adjust as needed)
-    setInterval(checkOrderList, 3000);
-
-    // Run once when the page loads
-    checkOrderList();
   });
+
+  $("#country").trigger("change");
+
+  // Handle form submission via AJAX
+  $("#personalInfoForm").submit(function (e) {
+    e.preventDefault();
+
+    var formData = $(this).serialize();
+
+    $.ajax({
+      url: "backend/order/information",
+      type: "POST",
+      data: formData,
+      success: function (response) {
+        var result = JSON.parse(response);
+        if (result.success) {
+          toastr.success("Information saved successfully!", "Success");
+        } else {
+          toastr.error("Failed to save information. Please try again.", "Error");
+        }
+      },
+      error: function () {
+        toastr.error("An error occurred. Please try again.", "Error");
+      },
+    });
+  });
+
+  function checkOrderList() {
+    $.ajax({
+      url: "backend/order/info_button.php",
+      type: "GET",
+      data: { poid: "<?php echo $poid; ?>" },
+      dataType: "json",
+      success: function (response) {
+        if (response.hasOrders) {
+          $("#saveBtn").prop("disabled", true);
+        } else {
+          $("#saveBtn").prop("disabled", false);
+        }
+      },
+    });
+  }
+
+  // Check if there is an image in localStorage and update the image preview
+  if (localStorage.getItem('uploadedImage')) {
+    var savedImage = localStorage.getItem('uploadedImage');
+    $('#uploadedImg').attr('src', savedImage);
+  }
+
+  // Handle file input change event
+  $('#fileInput').change(function (e) {
+    var file = e.target.files[0];
+
+    if (file) {
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        var uploadedImage = e.target.result;
+
+        // Save the uploaded image in localStorage
+        localStorage.setItem('uploadedImage', uploadedImage);
+
+        // Update the image preview with the uploaded image
+        $('#uploadedImg').attr('src', uploadedImage);
+      };
+
+      reader.readAsDataURL(file);  // Read the file as Data URL
+    }
+  });
+
+  setInterval(checkOrderList, 3000);
+  checkOrderList();
+});
 
 </script>

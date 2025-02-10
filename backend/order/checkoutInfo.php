@@ -1,17 +1,6 @@
 <?php
 include_once '../../database/conn.php';
 
-header('Content-Type: application/json'); // Ensure JSON response
-error_reporting(E_ALL); // Show all errors
-ini_set('display_errors', 1);
-
-if (!isset($_GET['poid']) || empty($_GET['poid'])) {
-    echo json_encode(["status" => "error", "message" => "Missing POID"]);
-    exit;
-}
-
-$poid = mysqli_real_escape_string($conn, $_GET['poid']); // Secure input
-
 $sql = "SELECT * FROM upti_order_list WHERE ol_poid = '$poid'";
 $result = mysqli_query($conn, $sql);
 
