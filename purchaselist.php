@@ -123,7 +123,7 @@
 
                   let rowHtml = `
                     <tr>
-                      <td>${row.trans_poid}</td>
+                      <td><a href="orderInformation?poid=${row.trans_poid}" class="btn btn-sm btn-primary">${row.trans_poid}</a></td>
                       <td>${row.trans_date}</td>
                       <td>${row.trans_fname}</td>
                       <td>${row.trans_country}</td>
