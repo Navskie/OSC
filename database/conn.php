@@ -47,6 +47,7 @@ if ($result->num_rows > 0) {
 }
 
 $poid = 'PD'.$users_id.'-'.$users_count;
+$rspoid = 'RS'.$users_id.'-'.$users_count;
 
 // Close Statement
 $stmt->close();

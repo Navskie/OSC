@@ -12,7 +12,7 @@ $query = "SELECT (SUM(ol_qty) * 185) as shipping_fee
           FROM upti_order_list 
           INNER JOIN upti_code ON code_name = ol_code 
           WHERE ol_poid = '$poid' AND ol_country = 'PHILIPPINES'
-          AND code_category IN ('SPECIAL PROMO', 'PROMO', 'REQUIRED UPSELL')";
+          AND code_category IN ('SPECIAL PROMO', 'PROMO', 'REQUIRED UPSELL', 'NO UPSELL')";
 
 $result = mysqli_query($conn, $query);
 
