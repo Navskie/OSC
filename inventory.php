@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <?php include_once 'include/head.php' ?>
+  <?php include_once 'database/conn.php' ?>
   <body>
     <div class="main-wrapper">
       <!-- Navbar -->
@@ -15,7 +16,7 @@
             <div class="row">
               <div class="col-sm-12">
                 <div class="page-sub-header">
-                  <h3 class="page-title">Welcome Name!</h3>
+                  <h3 class="page-title">Welcome <?php echo $users_name ?>!</h3>
                   <ul class="breadcrumb">
                     <li class="breadcrumb-item">
                       <a href="index">Home</a>
