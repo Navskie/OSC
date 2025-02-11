@@ -179,6 +179,7 @@
         contentType: false,  // Don't set content type
         success: function(response) {
             var result = JSON.parse(response);
+            // console.log(response);
             if (result.success) {
                 toastr.success("Information saved successfully!", "Success");
             } else {

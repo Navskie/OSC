@@ -21,10 +21,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $_SESSION['state'] = $_POST['state'];
 
     // Check if the address is provided when no image is uploaded
-    if (empty($_POST['address']) && !isset($_FILES['image']) || $_FILES['image']['error'] !== 0) {
-        echo json_encode(['success' => false, 'message' => 'Address is required if no image is uploaded.']);
+    if (empty($_POST['address']) && (empty($_FILES['image']['name']) || $_FILES['image']['error'] !== 0)) {
+        echo json_encode(['success' => false, 'message' => 'Please add an address or upload an image.']);
         exit();
     }
+
 
     $_SESSION['address'] = $_POST['address'];  // Store the address in session
 
@@ -42,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Move the uploaded file to the upload directory
         if (move_uploaded_file($file['tmp_name'], $filePath)) {
             // Save the file path (or filename) in the session
-            $_SESSION['uploaded_image'] = $filePath;
+            $_SESSION['uploaded_image'] = $fileName;
 
             // Respond with success status
             echo json_encode(['success' => true, 'message' => 'Information saved successfully.']);

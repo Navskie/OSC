@@ -62,6 +62,7 @@
                     <div class="invoice-total-inner">
                       <p>Subtotal <span class="subtotal-amount">0</span></p>
                       <p class="mb-0">Shipping Fee <span class="shipping-fee">0</span></p>
+                      <input type="hidden" name="hiddenshippingFee" id="hiddenshippingFee">
                     </div>
                     <div class="invoice-total-footer">
                       <h4>Total Amount <span class="total-amount">0</span></h4>
@@ -85,10 +86,32 @@
                   <label for="paymentMethod">Choose Payment Method</label>
                   <select name="paymentMethod" id="paymentMethod" class="form-control select2">
                     <option value="">Choose</option>
-                    <option value="E-Payment">E-Payment</option>
-                    <option value="Cash On Pick Up">Cash On Pick Up</option>
-                    <option value="Cash On Delivery">Cash On Delivery</option>
-                  </select>
+                    <?php 
+                    $country = $_SESSION['country'] ?? ''; // Handle case where session might not be set
+
+                    // Define payment options per country
+                    $paymentOptions = [
+                        'KOREA' => ['E-Payment'],
+                        'USA' => ['E-Payment'],
+                        'TAIWAN' => ['Cash On Pick Up' => '7/11 Pick Up', 'Cash On Delivery' => 'Post Office Delivery', 'E-Payment' => 'E-Payment'],
+                        'CANADA' => ['Cash On Pick Up' => 'Cash On Pick Up', 'E-Payment' => 'E-Payment'],
+                        'PHILIPPINES' => ['Cash On Pick Up', 'Cash On Delivery', 'E-Payment'],
+                        'JAPAN' => ['Cash On Pick Up', 'Cash On Delivery', 'E-Payment'],
+                        'UNITED ARAB EMIRATES' => ['Cash On Pick Up', 'Cash On Delivery', 'E-Payment'],
+                        'HONGKONG' => ['Cash On Pick Up', 'Cash On Delivery', 'E-Payment']
+                    ];
+
+                    // Generate the options dynamically
+                    if (isset($paymentOptions[$country])) {
+                        foreach ($paymentOptions[$country] as $value => $label) {
+                            // If array keys are numeric, use value as label
+                            if (is_int($value)) $value = $label;
+                            echo "<option value='$value'>$label</option>";
+                        }
+                    }
+                    ?>
+                </select>
+
                 </div>
               </div>
 
@@ -142,6 +165,7 @@
 
 <script>
   $(document).ready(function() {
+
     let defaultImage = 'assets/img/replace2.png';
     $('#imagesReceipt').attr('src', defaultImage);
   
@@ -239,7 +263,8 @@
           if (response.status === 'success') {
             // Ensure that shipping fee is numeric
             let shippingFee = parseFloat(response.shippingFee) || 0;
-            $(".shipping-fee").text(shippingFee.toFixed(2));  // Update the shipping fee displayed in the UI
+            $(".shipping-fee").text(shippingFee.toFixed(2));
+            $("#hiddenshippingFee").val(shippingFee.toFixed(2));  // Update the shipping fee displayed in the UI
             calculateTotal();  // Recalculate the total with updated shipping fee
           } else {
             console.error('Error:', response.message);
@@ -259,12 +284,14 @@
     // Submit form using AJAX
     $('#purchaseButton').click(function(e) {
       e.preventDefault();
+      let shippingFee = $("#hiddenshippingFee").val().trim();
+      console.log("Shipping Fee Before Submitting:", shippingFee); // Debugging
 
       // Collect form data including payment method, agreement, and receipt image if provided
       let formData = new FormData();
       formData.append('paymentMethod', $('#paymentMethod').val());
       formData.append('agreeStatement', $('#agreeStatement').is(':checked'));
-      formData.append('shippingFee', $('.shipping-fee').text());  // Shipping Fee
+      formData.append('hiddenshippingFee', shippingFee);  // ✅ Correct
       formData.append('totalAmount', $('.total-amount').text());  // Total Amount
 
       // Check if a file is selected and append it to the FormData
@@ -284,8 +311,8 @@
           let res = JSON.parse(response);
           if (res.status === 'success') {
             toastr.success("Checkout completed successfully!", "Success");
-
-            // Clear localStorage once checkout is successful
+            
+            //Clear localStorage once checkout is successful
             localStorage.clear();  // This will clear all items stored in localStorage
 
             setTimeout(function() {
@@ -301,8 +328,6 @@
         }
       });
     });
-
-
 
     // Initial fetch and refresh every 3 seconds
     fetchInvoiceData();
