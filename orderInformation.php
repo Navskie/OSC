@@ -172,15 +172,15 @@
           }
 
           $.ajax({
-            url: 'backend/remark/addRemark.php', // Adjust the URL to your back-end file
+            url: 'backend/remark/addRemark.php',
             method: 'POST',
             data: {
-              poid: '<?php echo $poid; ?>',  // Send the POID to associate with the remark
-              remark_content: remarkContent
+              poid: '<?php echo $poid; ?>',
+              remark_content: encodeURIComponent(remarkContent) // Encode the content to handle special characters
             },
             success: function (response) {
-              $('#remark_content').val('');  // Clear the input field
-              loadRemarks();  // Reload the remarks list
+              $('#remark_content').val('');
+              loadRemarks();
               toastr.success("Remark added successfully!", "Success");
             },
             error: function (xhr, status, error) {
@@ -189,6 +189,7 @@
             }
           });
         });
+
       });
     </script>
   </body>

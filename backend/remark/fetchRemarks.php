@@ -21,6 +21,8 @@ if (mysqli_num_rows($result) > 0) {
     $dateObj = new DateTime($date);
     $formattedDate = $dateObj->format('M j, Y g:iA');  // Format date
 
+    
+
     echo "
       <div class='d-flex align-items-start text-dark mb-4'>
         <div class='flex-shrink-0 me-3'>
