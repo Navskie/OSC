@@ -2,7 +2,7 @@
   <div class="col-md-12">
     <div class="card invoices-add-card">
       <div class="card-body">
-        <form id="personalInfoForm" class="invoices-form">
+        <form id="personalInfoForm" class="invoices-form" enctype="multipart/form-data">
           <div>
             <div class="row">
               <!-- Poid Number -->
@@ -99,19 +99,19 @@
               </div>
 
               <?php
-              // Check if there are any records in upti_order_list
-              $result = $conn->query("SELECT COUNT(*) AS count FROM upti_order_list WHERE ol_poid = '$poid'");
-              $hasOrders = $result->fetch_assoc()['count'];
-              $disabled = ($hasOrders > 0) ? 'disabled' : ''; // Assign 'disabled' only if there are orders
+                // Check if there are any records in upti_order_list
+                $result = $conn->query("SELECT COUNT(*) AS count FROM upti_order_list WHERE ol_poid = '$poid'");
+                $hasOrders = $result->fetch_assoc()['count'];
+                $disabled = ($hasOrders > 0) ? 'disabled' : ''; // Assign 'disabled' only if there are orders
               ?>
 
-            <!-- Save Information Button -->
-            <div class="col-xl-4 col-md-6 col-sm-12 col-12">
-              <div class="form-group">
-                <button type="submit" id="saveBtn" class="btn btn-primary form-control text-white" 
-                  <?php echo $disabled; ?>>Save Information</button>
+              <!-- Save Information Button -->
+              <div class="col-xl-4 col-md-6 col-sm-12 col-12">
+                <div class="form-group">
+                  <button type="submit" id="saveBtn" class="btn btn-primary form-control text-white" 
+                    <?php echo $disabled; ?>>Save Information</button>
+                </div>
               </div>
-            </div>
 
             </div>
           </div>
@@ -120,124 +120,122 @@
     </div>
   </div>
 </div>
+
 <script>
   $(document).ready(function () {
-  // Country and State Dropdown
-  $("#country").change(function () {
-    var country = $(this).val();
+    // Country and State Dropdown
+    $("#country").change(function () {
+      var country = $(this).val();
 
-    if (country) {
-      $.ajax({
-        url: "backend/order/state.php",
-        type: "GET",
-        dataType: "json",
-        data: { country: country },
-        success: function (data) {
-          var stateDropdown = $("#state");
-          stateDropdown.empty();
-          stateDropdown.append('<option value="">Select State</option>');
+      if (country) {
+        $.ajax({
+          url: "backend/order/state.php",
+          type: "GET",
+          dataType: "json",
+          data: { country: country },
+          success: function (data) {
+            var stateDropdown = $("#state");
+            stateDropdown.empty();
+            stateDropdown.append('<option value="">Select State</option>');
 
-          $.each(data, function (i, state) {
-            stateDropdown.append(
-              '<option value="' +
-                state.id +
-                '" ' +
-                (state.id ===
-                "<?php echo isset($_SESSION['state']) ? $_SESSION['state'] : ''; ?>" 
-                  ? "selected"
-                  : "") +
-                ">" +
-                state.text +
-                "</option>"
-            );
-          });
+            $.each(data, function (i, state) {
+              stateDropdown.append(
+                '<option value="' +
+                  state.id +
+                  '" ' +
+                  (state.id ===
+                  "<?php echo isset($_SESSION['state']) ? $_SESSION['state'] : ''; ?>" 
+                    ? "selected"
+                    : "") +
+                  ">" +
+                  state.text +
+                  "</option>"
+              );
+            });
 
-          stateDropdown.select2();
-        },
-      });
-    }
-  });
+            stateDropdown.select2();
+          },
+        });
+      }
+    });
 
-  $("#country").trigger("change");
+    $("#country").trigger("change");
 
-  // Handle form submission via AJAX
-  $("#personalInfoForm").submit(function (e) {
-    e.preventDefault();
+    // Handle form submission via AJAX
+    $("#personalInfoForm").submit(function (e) {
+      e.preventDefault();
 
-    var formData = new FormData(this); // Use FormData to collect all form data including files
-    var fileInput = $('#fileInput')[0]; // Get the file input element
+      var formData = new FormData(this); // Use FormData to collect all form data including files
+      var fileInput = $('#fileInput')[0]; // Get the file input element
 
-    if (fileInput.files.length > 0) {
+      if (fileInput.files.length > 0) {
         formData.append('image', fileInput.files[0]); // Append the image file to FormData
-    }
+      }
 
-    $.ajax({
+      $.ajax({
         url: 'backend/order/information', // Endpoint that handles both form data and image upload
         type: 'POST',
         data: formData,
         processData: false,  // Don't process the data
         contentType: false,  // Don't set content type
         success: function(response) {
-            var result = JSON.parse(response);
-            // console.log(response);
-            if (result.success) {
-                toastr.success("Information saved successfully!", "Success");
-            } else {
-                toastr.error("Failed to save information. Please try again.", "Error");
-            }
+          var result = JSON.parse(response);
+          if (result.success) {
+            toastr.success("Information saved successfully!", "Success");
+          } else {
+            toastr.error("Failed to save information. Please try again.", "Error");
+          }
         },
         error: function() {
-            toastr.error("An error occurred. Please try again.", "Error");
+          toastr.error("An error occurred. Please try again.", "Error");
         }
+      });
     });
-  });
 
-
-  function checkOrderList() {
-    $.ajax({
-      url: "backend/order/info_button.php",
-      type: "GET",
-      data: { poid: "<?php echo $poid; ?>" },
-      dataType: "json",
-      success: function (response) {
-        if (response.hasOrders) {
-          $("#saveBtn").prop("disabled", true);
-        } else {
-          $("#saveBtn").prop("disabled", false);
-        }
-      },
-    });
-  }
-
-  // Check if there is an image in localStorage and update the image preview
-  if (localStorage.getItem('uploadedImage')) {
-    var savedImage = localStorage.getItem('uploadedImage');
-    $('#uploadedImg').attr('src', savedImage);
-  }
-
-  // Handle file input change event
-  $('#fileInput').change(function (e) {
-    var file = e.target.files[0];
-
-    if (file) {
-      var reader = new FileReader();
-
-      reader.onload = function (e) {
-        var uploadedImage = e.target.result;
-
-        // Save the uploaded image in localStorage
-        localStorage.setItem('uploadedImage', uploadedImage);
-
-        // Update the image preview with the uploaded image
-        $('#uploadedImg').attr('src', uploadedImage);
-      };
-
-      reader.readAsDataURL(file);  // Read the file as Data URL
+    function checkOrderList() {
+      $.ajax({
+        url: "backend/order/info_button.php",
+        type: "GET",
+        data: { poid: "<?php echo $poid; ?>" },
+        dataType: "json",
+        success: function (response) {
+          if (response.hasOrders) {
+            $("#saveBtn").prop("disabled", true);
+          } else {
+            $("#saveBtn").prop("disabled", false);
+          }
+        },
+      });
     }
+
+    // Check if there is an image in localStorage and update the image preview
+    if (localStorage.getItem('uploadedImage')) {
+      var savedImage = localStorage.getItem('uploadedImage');
+      $('#uploadedImg').attr('src', savedImage);
+    }
+
+    // Handle file input change event
+    $('#fileInput').change(function (e) {
+      var file = e.target.files[0];
+
+      if (file) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+          var uploadedImage = e.target.result;
+
+          // Save the uploaded image in localStorage
+          localStorage.setItem('uploadedImage', uploadedImage);
+
+          // Update the image preview with the uploaded image
+          $('#uploadedImg').attr('src', uploadedImage);
+        };
+
+        reader.readAsDataURL(file);  // Read the file as Data URL
+      }
+    });
+
+    setInterval(checkOrderList, 3000);
+    checkOrderList();
   });
-
-  setInterval(checkOrderList, 3000);
-  checkOrderList();
-});
-
 </script>

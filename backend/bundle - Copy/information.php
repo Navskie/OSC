@@ -13,21 +13,21 @@ if (!is_dir($uploadDirectory)) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle the form data and store it in the session
     $_SESSION['rspoid'] = $_POST['rspoid'];
-    $_SESSION['rscustomer_name'] = $_POST['rscustomer_name'];
-    $_SESSION['rsemail'] = $_POST['rsemail'];
-    $_SESSION['rsmobile_number'] = $_POST['rsmobile_number'];
-    $_SESSION['rsdelivery_option'] = $_POST['rsdelivery_option'];
-    $_SESSION['rscountry'] = $_POST['rscountry'];
-    $_SESSION['rsstate'] = $_POST['rsstate'];
+    $_SESSION['rscustomer_name'] = $_POST['customer_name'];
+    $_SESSION['rsemail'] = $_POST['email'];
+    $_SESSION['rsmobile_number'] = $_POST['mobile_number'];
+    $_SESSION['rsdelivery_option'] = $_POST['delivery_option'];
+    $_SESSION['rscountry'] = $_POST['country'];
+    $_SESSION['rsstate'] = $_POST['state'];
 
     // Check if the address is provided when no image is uploaded
-    if (empty($_POST['address']) && (empty($_FILES['image']['name']) || $_FILES['image']['error'] !== 0)) {
+    if (empty($_POST['rsaddress']) && (empty($_FILES['image']['name']) || $_FILES['image']['error'] !== 0)) {
         echo json_encode(['success' => false, 'message' => 'Please add an address or upload an image.']);
         exit();
     }
 
 
-    $_SESSION['rsaddress'] = $_POST['address'];  // Store the address in session
+    $_SESSION['rsaddress'] = $_POST['rsaddress'];  // Store the address in session
 
     // Handle image upload if a file is provided
     if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {

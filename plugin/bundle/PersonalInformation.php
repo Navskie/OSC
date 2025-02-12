@@ -1,8 +1,8 @@
 <div class="row collapse" id="ResellerInformation">
-<div class="col-md-12">
+  <div class="col-md-12">
     <div class="card invoices-add-card">
       <div class="card-body">
-        <form id="personalInfoForm" class="invoices-form" enctype="multipart/form-data">
+        <form id="new_PersonalInfoForm" class="invoices-form" enctype="multipart/form-data">
           <div>
             <div class="row">
               <!-- Poid Number -->
@@ -17,7 +17,7 @@
               <div class="col-xl-4 col-md-6 col-sm-12 col-12">
                 <div class="form-group">
                   <label>Customer Name</label>
-                  <input class="form-control" type="text" name="rscustomer_name" value="<?php echo isset($_SESSION['rscustomer_name']) ? $_SESSION['rscustomer_name'] : ''; ?>" placeholder="Customer Name">
+                  <input class="form-control" type="text" name="new_customer_name" value="<?php echo isset($_SESSION['new_customer_name']) ? $_SESSION['new_customer_name'] : ''; ?>" placeholder="Customer Name">
                 </div>
               </div>
 
@@ -25,7 +25,7 @@
               <div class="col-xl-4 col-md-6 col-sm-12 col-12">
                 <div class="form-group">
                   <label>Email Address</label>
-                  <input class="form-control" type="email" name="rsemail" value="<?php echo isset($_SESSION['rsemail']) ? $_SESSION['rsemail'] : ''; ?>" placeholder="Email Address">
+                  <input class="form-control" type="email" name="new_email" value="<?php echo isset($_SESSION['new_email']) ? $_SESSION['new_email'] : ''; ?>" placeholder="Email Address">
                 </div>
               </div>
 
@@ -33,7 +33,7 @@
               <div class="col-xl-4 col-md-6 col-sm-12 col-12">
                 <div class="form-group">
                   <label>Mobile Number</label>
-                  <input class="form-control" type="text" name="rsmobile_number" value="<?php echo isset($_SESSION['rsmobile_number']) ? $_SESSION['rsmobile_number'] : ''; ?>" placeholder="Mobile Number">
+                  <input class="form-control" type="text" name="new_mobile_number" value="<?php echo isset($_SESSION['new_mobile_number']) ? $_SESSION['new_mobile_number'] : ''; ?>" placeholder="Mobile Number">
                 </div>
               </div>
 
@@ -41,20 +41,22 @@
               <div class="col-xl-4 col-md-6 col-sm-12 col-12">
                 <div class="form-group">
                   <label>Complete Address</label>
-                  <textarea name="rsaddress" class="form-control"><?php echo isset($_SESSION['rsaddress']) ? $_SESSION['rsaddress'] : ''; ?></textarea>
+                  <textarea name="new_address" class="form-control"><?php echo isset($_SESSION['new_address']) ? $_SESSION['new_address'] : ''; ?></textarea>
                 </div>
               </div>
 
+              <!-- Image Upload and Preview -->
               <div class="col-xl-4 col-md-6 col-sm-12 col-12">
                 <div class="row">
                   <div class="col-4 d-flex justify-content-center align-items-center w-100 mb-3">
-                    <img src="assets/img/replace.png" alt="image" id="rsuploadedImg" class="img-fluid rounded" width="200" />
+                    <!-- Image Displayed Here -->
+                    <img src="assets/img/replace.png" id="new_uploadedImg" class="img-fluid rounded" width="200" />
                   </div>
                   <div class="col-8 d-flex justify-content-center align-items-center w-100">
                     <div class="form-group students-up-files">
                       <div class="uplod">
                         <label class="file-upload image-upbtn mb-0">
-                          Upload Image Address <input type="file" id="rsfileInput">
+                          Upload Image Address <input type="file" id="new_fileInput">
                         </label>
                       </div>
                     </div>
@@ -66,10 +68,10 @@
               <div class="col-xl-4 col-md-6 col-sm-12 col-12">
                 <div class="form-group">
                   <label>Delivery Option</label>
-                  <select name="delivery_option" class="form-control">
+                  <select name="new_delivery_option" class="form-control">
                     <option value="">Select Option</option>
-                    <option value="Post Office Pick Up" <?php echo (isset($_SESSION['delivery_option']) && $_SESSION['delivery_option'] == 'Post Office Pick Up') ? 'selected' : ''; ?>>Post Office Pick Up</option>
-                    <option value="Direct Mail Box" <?php echo (isset($_SESSION['delivery_option']) && $_SESSION['delivery_option'] == 'Direct Mail Box') ? 'selected' : ''; ?>>Direct Mail Box</option>
+                    <option value="Post Office Pick Up" <?php echo (isset($_SESSION['new_delivery_option']) && $_SESSION['new_delivery_option'] == 'Post Office Pick Up') ? 'selected' : ''; ?>>Post Office Pick Up</option>
+                    <option value="Direct Mail Box" <?php echo (isset($_SESSION['new_delivery_option']) && $_SESSION['new_delivery_option'] == 'Direct Mail Box') ? 'selected' : ''; ?>>Direct Mail Box</option>
                   </select>
                 </div>
               </div>
@@ -78,23 +80,24 @@
               <div class="col-xl-4 col-md-6 col-sm-12 col-12">
                 <div class="form-group">
                   <label>Country</label>
-                  <select name="country" id="country" class="form-control">
-                    <option value="PHILIPPINES" <?php echo (isset($_SESSION['country']) && $_SESSION['country'] == 'PHILIPPINES') ? 'selected' : ''; ?>>PHILIPPINES</option>
-                    <option value="KOREA" <?php echo (isset($_SESSION['country']) && $_SESSION['country'] == 'KOREA') ? 'selected' : ''; ?>>KOREA</option>
-                    <option value="TAIWAN" <?php echo (isset($_SESSION['country']) && $_SESSION['country'] == 'TAIWAN') ? 'selected' : ''; ?>>TAIWAN</option>
-                    <option value="JAPAN" <?php echo (isset($_SESSION['country']) && $_SESSION['country'] == 'JAPAN') ? 'selected' : ''; ?>>JAPAN</option>
-                    <option value="CANADA" <?php echo (isset($_SESSION['country']) && $_SESSION['country'] == 'CANADA') ? 'selected' : ''; ?>>CANADA</option>
-                    <option value="USA" <?php echo (isset($_SESSION['country']) && $_SESSION['country'] == 'USA') ? 'selected' : ''; ?>>USA</option>
-                    <option value="UNITED ARAB EMIRATES" <?php echo (isset($_SESSION['country']) && $_SESSION['country'] == 'UNITED ARAB EMIRATES') ? 'selected' : ''; ?>>UNITED ARAB EMIRATES</option>
-                    <option value="HONGKONG" <?php echo (isset($_SESSION['country']) && $_SESSION['country'] == 'HONGKONG') ? 'selected' : ''; ?>>HONGKONG</option>
+                  <select name="new_country" id="new_country" class="form-control">
+                    <option value="PHILIPPINES" <?php echo (isset($_SESSION['new_country']) && $_SESSION['new_country'] == 'PHILIPPINES') ? 'selected' : ''; ?>>PHILIPPINES</option>
+                    <option value="KOREA" <?php echo (isset($_SESSION['new_country']) && $_SESSION['new_country'] == 'KOREA') ? 'selected' : ''; ?>>KOREA</option>
+                    <option value="TAIWAN" <?php echo (isset($_SESSION['new_country']) && $_SESSION['new_country'] == 'TAIWAN') ? 'selected' : ''; ?>>TAIWAN</option>
+                    <option value="JAPAN" <?php echo (isset($_SESSION['new_country']) && $_SESSION['new_country'] == 'JAPAN') ? 'selected' : ''; ?>>JAPAN</option>
+                    <option value="CANADA" <?php echo (isset($_SESSION['new_country']) && $_SESSION['new_country'] == 'CANADA') ? 'selected' : ''; ?>>CANADA</option>
+                    <option value="USA" <?php echo (isset($_SESSION['new_country']) && $_SESSION['new_country'] == 'USA') ? 'selected' : ''; ?>>USA</option>
+                    <option value="UNITED ARAB EMIRATES" <?php echo (isset($_SESSION['new_country']) && $_SESSION['new_country'] == 'UNITED ARAB EMIRATES') ? 'selected' : ''; ?>>UNITED ARAB EMIRATES</option>
+                    <option value="HONGKONG" <?php echo (isset($_SESSION['new_country']) && $_SESSION['new_country'] == 'HONGKONG') ? 'selected' : ''; ?>>HONGKONG</option>
                   </select>
                 </div>
               </div>
 
+              <!-- State -->
               <div class="col-xl-4 col-md-6 col-sm-12 col-12">
                 <div class="form-group">
                   <label>State</label>
-                  <select name="state" id="state" class="form-control select2"></select>
+                  <select name="new_state" id="new_state" class="form-control select2"></select>
                 </div>
               </div>
 
@@ -105,14 +108,12 @@
               $disabled = ($hasOrders > 0) ? 'disabled' : ''; // Assign 'disabled' only if there are orders
               ?>
 
-            <!-- Save Information Button -->
-            <div class="col-xl-4 col-md-6 col-sm-12 col-12">
-              <div class="form-group">
-                <button type="submit" id="rssaveBtn" class="btn btn-primary form-control text-white" 
-                  <?php echo $disabled; ?>>Save Information</button>
+              <!-- Save Information Button -->
+              <div class="col-xl-4 col-md-6 col-sm-12 col-12">
+                <div class="form-group">
+                  <button type="submit" id="new_saveBtn" class="btn btn-primary form-control text-white">Save Information</button>
+                </div>
               </div>
-            </div>
-
             </div>
           </div>
         </form>
@@ -122,15 +123,102 @@
 </div>
 
 <script>
-  $(document).ready(function () {
-  // Check if there is an image in localStorage and update the image preview
-  if (localStorage.getItem('rsuploadedImage')) {
-    var savedImage = localStorage.getItem('rsuploadedImage');
-    $('#rsuploadedImg').attr('src', savedImage);
+$(document).ready(function () {
+
+  // Country change event
+  $("#new_country").change(function () {
+    var new_country = $(this).val();
+
+    if (new_country) {
+      $.ajax({
+        url: "backend/bundle/state.php",
+        type: "GET",
+        dataType: "json",
+        data: { new_country: new_country },
+        success: function (data) {
+          var newstateDropdown = $("#new_state");
+          newstateDropdown.empty();
+          newstateDropdown.append('<option value="">Select State</option>');
+
+          $.each(data, function (i, state) {
+            newstateDropdown.append(
+              '<option value="' +
+                state.id +
+                '" ' +
+                (state.id === "<?php echo isset($_SESSION['new_state']) ? $_SESSION['new_state'] : ''; ?>" 
+                  ? "selected"
+                  : "") +
+                ">" +
+                state.text +
+                "</option>"
+            );
+          });
+
+          // Reinitialize select2 after appending options
+          // newstateDropdown.select2(); // Reinitialize after dynamically updating options
+        },
+      });
+    }
+  });
+
+  $("#new_country").trigger("change");
+
+  // Handle form submission via AJAX
+  $("#new_PersonalInfoForm").submit(function (e) {  
+    e.preventDefault();
+
+    var formData = new FormData(this); 
+    var fileInput = $('#new_fileInput')[0]; 
+
+    if (fileInput.files.length > 0) {
+      formData.append('image', fileInput.files[0]);
+    }
+
+    $.ajax({
+      url: 'backend/bundle/save_information',
+      type: 'POST',
+      data: formData,
+      processData: false, 
+      contentType: false,
+      success: function(response) {
+        var result = JSON.parse(response);
+        if (result.success) {
+          toastr.success("Information saved successfully!", "Success");
+        } else {
+          toastr.error("Failed to save information. Please try again.", "Error");
+        }
+      },
+      error: function() {
+        toastr.error("An error occurred. Please try again.", "Error");
+      }
+    });
+  });
+
+  // Check for orders
+  function NewcheckOrderList() {
+    $.ajax({
+      url: "backend/bundle/info_button.php",
+      type: "GET",
+      data: { rspoid: "<?php echo $rspoid; ?>" },
+      dataType: "json",
+      success: function (response) {
+        if (response.hasOrders) {
+          $("#new_saveBtn").prop("disabled", true);
+        } else {
+          $("#new_saveBtn").prop("disabled", false);
+        }
+      },
+    });
   }
 
-  // Handle file input change event
-  $('#rsfileInput').change(function (e) {
+  // Check image in localStorage and update the preview
+  if (localStorage.getItem('neWuploadedImage')) {
+    var savedImage = localStorage.getItem('neWuploadedImage');
+    $('#new_uploadedImg').attr('src', savedImage);
+  }
+
+  // File input change event
+  $('#new_fileInput').change(function (e) {
     var file = e.target.files[0];
 
     if (file) {
@@ -139,47 +227,17 @@
       reader.onload = function (e) {
         var uploadedImage = e.target.result;
 
-        // Save the uploaded image in localStorage
-        localStorage.setItem('rsuploadedImage', uploadedImage);
+        localStorage.setItem('neWuploadedImage', uploadedImage);
 
-        // Update the image preview with the uploaded image
-        $('#rsuploadedImg').attr('src', uploadedImage);
+        $('#new_uploadedImg').attr('src', uploadedImage);
       };
 
-      reader.readAsDataURL(file);  // Read the file as Data URL
+      reader.readAsDataURL(file); 
     }
   });
 
-  // Handle form submission via AJAX
-  $("#personalInfoForm").submit(function (e) {
-    e.preventDefault();
-
-    var formData = new FormData(this); // Use FormData to collect all form data including files
-    var fileInput = $('#rsfileInput')[0]; // Get the file input element
-
-    if (fileInput.files.length > 0) {
-        formData.append('image', fileInput.files[0]); // Append the image file to FormData
-    }
-
-    $.ajax({
-        url: 'backend/bundle/information', // Endpoint that handles both form data and image upload
-        type: 'POST',
-        data: formData,
-        processData: false,  // Don't process the data
-        contentType: false,  // Don't set content type
-        success: function(response) {
-            var result = JSON.parse(response);
-            // console.log(response);
-            if (result.success) {
-                toastr.success("Information saved successfully!", "Success");
-            } else {
-                toastr.error(result.message, "Error");
-            }
-        },
-        error: function() {
-            toastr.error("An error occurred. Please try again.", "Error");
-        }
-    });
-  });
+  setInterval(NewcheckOrderList, 3000);
+  NewcheckOrderList();
 });
+
 </script>

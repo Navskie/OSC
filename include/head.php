@@ -20,15 +20,16 @@
     rel="stylesheet"
     href="assets/plugins/fontawesome/css/fontawesome.min.css"
   />
+  <script src="assets/js/jquery-3.6.0.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
   <link rel="stylesheet" href="assets/plugins/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="assets/css/style.css" />
   <link rel="stylesheet" href="assets/plugins/simpleline/simple-line-icons.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+  
   <link rel="stylesheet" href="assets/plugins/datatables/datatables.min.css">
 
   <link rel="stylesheet" href="assets/plugins//toastr/toatr.css">
-
-  
 
   <style>
     /* Ensure Select2 matches your input styles */
@@ -73,8 +74,7 @@
       padding: 10px 14px;
     }
   </style>
-  <script src="assets/js/jquery-3.6.0.min.js"></script>
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
   
 </head>

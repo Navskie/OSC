@@ -20,30 +20,30 @@
                 <div class="card-body">
                   <div class="row">
                     <div class="col-xl-3 col-md-6 col-sm-12 col-12 mb-2">
-                      <button class="btn btn-primary form-control text-white accordion-btn" type="button" data-bs-toggle="collapse"
+                      <button class="btn form-control text-white accordion-btn btn-dark" type="button" data-bs-toggle="collapse"
                         data-bs-target="#ResellerInformation" aria-expanded="false" aria-controls="ResellerInformation" id="btnResellerInformation">
-                        Personal Information
+                        Reseller Information
                       </button>
                     </div>
 
                     <div class="col-xl-3 col-md-6 col-sm-12 col-12 mb-2">
-                      <button class="btn btn-primary form-control text-white accordion-btn" type="button" data-bs-toggle="collapse"
+                      <button class="btn form-control text-white accordion-btn btn-dark" type="button" data-bs-toggle="collapse"
                         data-bs-target="#ResellerLoginInformation" aria-expanded="false" aria-controls="ResellerLoginInformation" id="btnResellerLoginInformation">
-                        Login Information
+                        Reseller Account
                       </button>
                     </div>
 
                     <div class="col-xl-3 col-md-6 col-sm-12 col-12 mb-2">
-                      <button class="btn btn-primary form-control text-white accordion-btn" type="button" data-bs-toggle="collapse"
+                      <button class="btn form-control text-white accordion-btn btn-dark" type="button" data-bs-toggle="collapse"
                         data-bs-target="#ResellerOrderDetails" aria-expanded="false" aria-controls="ResellerOrderDetails" id="btnResellerOrderDetails">
-                        Order Details
+                        Reseller Order
                       </button>
                     </div>
 
                     <div class="col-xl-3 col-md-6 col-sm-12 col-12 mb-2">
-                      <button class="btn btn-primary form-control text-white accordion-btn" type="button" data-bs-toggle="collapse"
+                      <button class="btn form-control text-white accordion-btn btn-dark" type="button" data-bs-toggle="collapse"
                         data-bs-target="#ResellerCheckout" aria-expanded="false" aria-controls="ResellerCheckout" id="btnResellerCheckout">
-                        Checkout
+                        Reseller Checkout
                       </button>
                     </div>
                   </div>
@@ -64,6 +64,6 @@
 
     <!-- Footer -->
     <?php include_once 'include/footer.php' ?>
-    <script src="function/order/mainpage.js"></script>
+    <script src="function/bundle/mainpage.js"></script>
   </body>
 </html>
