@@ -38,10 +38,6 @@
   </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet"/>
-
 <script>
   $(document).ready(function() {
     // Trigger AJAX call when username is changed
@@ -74,7 +70,7 @@
       
       if (username != '') {
         $.ajax({
-          url: 'backend/bundle/save_username_session', // PHP script to save username in session
+          url: 'backend/bundle/save_username', // PHP script to save username in session
           type: 'POST',
           data: { username: username },
           success: function(response) {

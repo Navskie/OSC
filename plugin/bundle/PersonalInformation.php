@@ -155,7 +155,7 @@ $(document).ready(function () {
           });
 
           // Reinitialize select2 after appending options
-          // newstateDropdown.select2(); // Reinitialize after dynamically updating options
+          newstateDropdown.select2(); // Reinitialize after dynamically updating options
         },
       });
     }
