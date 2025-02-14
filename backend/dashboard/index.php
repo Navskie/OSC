@@ -19,12 +19,15 @@
     $salesData[$status] = $row['sales'] ?? 0;
   }
 
-  $query2 = "SELECT SUM(ol.ol_php) AS sales FROM upti_order_list AS ol 
-            INNER JOIN upti_activities AS ac ON ac.activities_poid = ol.ol_poid 
-            INNER JOIN upti_transaction AS tr ON tr.trans_poid = ol.ol_poid 
-            WHERE YEAR(ac.activities_date) = YEAR(CURDATE()) 
-            AND ac.activities_caption = 'Order Delivered' 
-            AND tr.trans_seller = '$users_code'";
+  $query2 = "SELECT SUM(ol.ol_php) AS sales 
+           FROM upti_order_list AS ol 
+           INNER JOIN upti_activities AS ac ON ac.activities_poid = ol.ol_poid 
+           INNER JOIN upti_transaction AS tr ON tr.trans_poid = ol.ol_poid 
+           WHERE YEAR(ac.activities_date) = YEAR(CURDATE()) 
+           AND MONTH(ac.activities_date) = MONTH(CURDATE()) 
+           AND ac.activities_caption = 'Order Delivered' 
+           AND tr.trans_seller = '$users_code'";
+
 
   $result2 = mysqli_query($conn, $query2);
   $row2 = mysqli_fetch_assoc($result2);

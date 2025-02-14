@@ -15,7 +15,10 @@ if (!empty($remark_content)) {
   $remark_date = date('Y-m-d');
   $remark_time = date('H:i:s');
 
-  $remark_content = mysqli_real_escape_string($conn, $remark_content);
+  // Escape the remark content to prevent SQL injection
+  $old_remark_content = mysqli_real_escape_string($conn, $remark_content);
+
+  $remark_content = urldecode($old_remark_content);
 
   // Insert the new remark into the database
   $query = "INSERT INTO upti_remarks (remark_poid, remark_name, remark_content, remark_date, remark_time, remark_csr)

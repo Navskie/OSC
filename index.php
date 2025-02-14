@@ -208,7 +208,6 @@
           type: 'GET',
           dataType: 'json',
           success: function(data) {
-            console.log('Data received:', data); // Log the data to make sure it's correct
 
             // Update the DOM with the fetched sales data
             $('#today-sales').text(parseFloat(data.todaySales).toFixed(2)).removeClass('skeleton skeleton-text');

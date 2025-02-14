@@ -242,7 +242,7 @@
             // ❌ Condition 4: 1 PREMIUM allowed per (PROMO + SPECIAL PROMO + REQUIRED UPSELL)
             var allowedPremiumQty = promoQty + specialPromoQty + requiredUpsellQty;
             if (premiumQty > allowedPremiumQty) {
-              notificationHtml += `<p class='text-danger'>You can only add 1 PREMIUM per PROMO, SPECIAL PROMO, or REQUIRED UPSELL.</p>`;
+              notificationHtml += `<p class='text-danger'>You can only add 1 PREMIUM per Regular Items</p>`;
               disableCheckout = true;
             }
 

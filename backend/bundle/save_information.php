@@ -26,7 +26,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit();
     }
 
-
     $_SESSION['new_address'] = $_POST['new_address'];  // Store the address in session
 
     // Handle image upload if a file is provided
