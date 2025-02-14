@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   $stmt->close();
 
   if (!$priceFetch) {
-    echo json_encode(["status" => "price", "message" => "Price information not found.".$ol_country]);
+    echo json_encode(["status" => "price", "message" => "Price information not found."]);
     exit();
   }
 

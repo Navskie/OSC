@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ol_code'])) {
     $orderCode = $conn->real_escape_string($orderCode);
 
     // SQL query to delete the item from the database
-    $sql = "DELETE FROM upti_order_list WHERE ol_code = '$orderCode' AND ol_poid = '$poid'";
+    $sql = "DELETE FROM upti_order_list WHERE ol_code = '$orderCode' AND ol_poid = '$rspoid'";
 
     if ($conn->query($sql) === TRUE) {
         echo json_encode(['status' => 'success', 'message' => 'Item deleted successfully']);

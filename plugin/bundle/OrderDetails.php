@@ -107,7 +107,7 @@
               submitButton.html('Submit Order').prop("disabled", false);
             }, 2000);
             $("#NeworderForm")[0].reset();
-            $('#item_code').val(null).trigger("change");
+            $('#reseller_code').val(null).trigger("change");
             fetchOrderDetails();      // Fetch updated order details
             fetchOrderNotification(); // Fetch updated order notification
           } else if (response.status === "stock") {
@@ -126,7 +126,7 @@
               submitButton.html('Submit Order').prop("disabled", false);
             }, 2000);
             $("#NeworderForm")[0].reset();
-            $('#item_code').val(null).trigger("change");
+            $('#reseller_code').val(null).trigger("change");
             fetchOrderDetails();      // Fetch updated order details
             fetchOrderNotification(); // Fetch updated order notification
           } else {
@@ -216,13 +216,13 @@
                   }
 
                   // 2. Validation for UPSELL and PREMIUM items
-                  if (upsellQty === 1 && premiumQty !== 1) {
-                      notificationHtml += "<p class='text-danger'>If you add 1 UPSELL, you must add 1 PREMIUM.</p>";
-                      disableCheckout = true;
+                  if (premiumQty > resellersQty) {
+                    notificationHtml += `<p class='text-danger'>You can only add 1 PREMIUM per RESELLER PACKAGE.</p>`;
+                    disableCheckout = true;
                   }
-                  if (upsellQty === 2 && premiumQty > 0) {
-                      notificationHtml += "<p class='text-danger'>If you add 2 UPSELL items, you cannot add any PREMIUM items.</p>";
-                      disableCheckout = true;
+                  if ((upsellQty + premiumQty) > (resellersQty * 2)) {
+                    notificationHtml += "<p class='text-danger'>The total of UPSELL and PREMIUM cannot exceed twice the sum of Regular Items.</p>";
+                    disableCheckout = true;
                   }
 
                   // Default notification if no issues
@@ -235,19 +235,19 @@
 
                   // Enable or Disable the Checkout button based on conditions
                   if (disableCheckout) {
-                      $('#btnCheckOut').prop('disabled', true); // Disable the Checkout button if any validation failed
+                      $('#btnResellerCheckout').prop('disabled', true); // Disable the Checkout button if any validation failed
                   } else {
-                      $('#btnCheckOut').prop('disabled', false); // Enable the Checkout button if all conditions are met
+                      $('#btnResellerCheckout').prop('disabled', false); // Enable the Checkout button if all conditions are met
                   }
 
               } else {
                   $("#orderNotification").html("<p>No order notifications available</p>");
-                  $('#btnCheckOut').prop('disabled', true); // Disable Checkout if no notifications
+                  $('#btnResellerCheckout').prop('disabled', true); // Disable Checkout if no notifications
               }
           },
           error: function () {
               $("#orderNotification").html("<p>Error fetching order notifications</p>");
-              $('#btnCheckOut').prop('disabled', true); // Disable Checkout on error
+              $('#btnResellerCheckout').prop('disabled', true); // Disable Checkout on error
           }
       });
   }
